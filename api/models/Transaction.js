@@ -136,6 +136,43 @@ const updateBalance = async ({ user, incrementValue, setValues }) => {
   );
 };
 
+/**
+ * Calculates USD cost from tokens and rate.
+ * Rate is in USD per 1M tokens, so cost = tokens * rate / 1_000_000
+ */
+function calculateUSDCost(tokens, rate) {
+  if (!tokens || !rate || tokens === 0 || rate === 0) {
+    return 0;
+  }
+  return (Math.abs(tokens) * Math.abs(rate)) / 1_000_000;
+}
+
+/**
+ * Infers provider from model name or endpoint
+ */
+function inferProvider(model, endpoint) {
+  if (!model && !endpoint) {
+    return undefined;
+  }
+  
+  const modelLower = (model || '').toLowerCase();
+  const endpointLower = (endpoint || '').toLowerCase();
+  
+  if (modelLower.includes('claude') || endpointLower.includes('anthropic')) {
+    return 'anthropic';
+  }
+  if (modelLower.includes('gpt') || endpointLower.includes('openai')) {
+    return 'openai';
+  }
+  if (modelLower.includes('gemini') || endpointLower.includes('google')) {
+    return 'google';
+  }
+  if (endpointLower) {
+    return endpointLower;
+  }
+  return undefined;
+}
+
 /** Method to calculate and set the tokenValue for a transaction */
 function calculateTokenValue(txn) {
   if (!txn.valueKey || !txn.tokenType) {
@@ -148,6 +185,11 @@ function calculateTokenValue(txn) {
   if (txn.context && txn.tokenType === 'completion' && txn.context === 'incomplete') {
     txn.tokenValue = Math.ceil(txn.tokenValue * cancelRate);
     txn.rate *= cancelRate;
+  }
+  
+  // Calculate USD cost (rate is already in USD per 1M tokens)
+  if (txn.rawAmount && txn.rate) {
+    txn.estimated_cost_usd = calculateUSDCost(txn.rawAmount, txn.rate);
   }
 }
 
@@ -200,6 +242,27 @@ async function createTransaction(_txData) {
 
   const transaction = new Transaction(txData);
   transaction.endpointTokenConfig = txData.endpointTokenConfig;
+  
+  // Populate agent_id from conversation if available
+  if (txData.conversationId && !txData.agent_id) {
+    try {
+      const conversation = await Conversation.findOne({ conversationId: txData.conversationId }).lean();
+      if (conversation?.agent_id) {
+        transaction.agent_id = conversation.agent_id;
+      }
+    } catch (error) {
+      logger.debug('[createTransaction] Error fetching conversation for agent_id', error);
+      // Non-fatal error, continue without agent_id
+    }
+  } else if (txData.agent_id) {
+    transaction.agent_id = txData.agent_id;
+  }
+  
+  // Infer provider from model/endpoint
+  if (!transaction.provider && (txData.model || txData.valueKey)) {
+    transaction.provider = inferProvider(txData.model, txData.valueKey);
+  }
+  
   calculateTokenValue(transaction);
 
   await transaction.save();
@@ -303,11 +366,20 @@ function calculateStructuredTokenValue(txn) {
     );
 
     txn.rawAmount = -totalPromptTokens;
+    
+    // Calculate USD cost for structured tokens
+    const inputCost = calculateUSDCost(txn.inputTokens || 0, Math.abs(inputMultiplier));
+    const writeCost = calculateUSDCost(txn.writeTokens || 0, Math.abs(writeMultiplier));
+    const readCost = calculateUSDCost(txn.readTokens || 0, Math.abs(readMultiplier));
+    txn.estimated_cost_usd = inputCost + writeCost + readCost;
   } else if (txn.tokenType === 'completion') {
     const multiplier = getMultiplier({ tokenType: txn.tokenType, model, endpointTokenConfig });
     txn.rate = Math.abs(multiplier);
     txn.tokenValue = -Math.abs(txn.rawAmount) * multiplier;
     txn.rawAmount = -Math.abs(txn.rawAmount);
+    
+    // Calculate USD cost for completion tokens
+    txn.estimated_cost_usd = calculateUSDCost(txn.rawAmount, txn.rate);
   }
 
   if (txn.context && txn.tokenType === 'completion' && txn.context === 'incomplete') {
@@ -317,6 +389,15 @@ function calculateStructuredTokenValue(txn) {
       txn.rateDetail = Object.fromEntries(
         Object.entries(txn.rateDetail).map(([k, v]) => [k, v * cancelRate]),
       );
+    }
+    // Recalculate USD cost with adjusted rate
+    if (txn.tokenType === 'completion' && txn.rawAmount) {
+      txn.estimated_cost_usd = calculateUSDCost(txn.rawAmount, txn.rate);
+    } else if (txn.tokenType === 'prompt') {
+      const inputCost = calculateUSDCost(txn.inputTokens || 0, Math.abs(txn.rateDetail?.input || txn.rate));
+      const writeCost = calculateUSDCost(txn.writeTokens || 0, Math.abs(txn.rateDetail?.write || txn.rate));
+      const readCost = calculateUSDCost(txn.readTokens || 0, Math.abs(txn.rateDetail?.read || txn.rate));
+      txn.estimated_cost_usd = inputCost + writeCost + readCost;
     }
   }
 }
