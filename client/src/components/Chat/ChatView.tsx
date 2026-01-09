@@ -1,13 +1,13 @@
-import { memo, useCallback } from 'react';
+import { memo, useCallback, useEffect, useRef } from 'react';
 import { useRecoilValue } from 'recoil';
 import { useForm } from 'react-hook-form';
 import { Spinner } from '@librechat/client';
 import { useParams } from 'react-router-dom';
-import { Constants, buildTree } from 'librechat-data-provider';
+import { Constants, buildTree, EModelEndpoint } from 'librechat-data-provider';
 import type { TMessage } from 'librechat-data-provider';
 import type { ChatFormValues } from '~/common';
-import { ChatContext, AddedChatContext, useFileMapContext, ChatFormProvider } from '~/Providers';
-import { useAddedResponse, useResumeOnLoad, useAdaptiveSSE, useChatHelpers } from '~/hooks';
+import { ChatContext, AddedChatContext, useFileMapContext, ChatFormProvider, useAgentsMapContext } from '~/Providers';
+import { useAddedResponse, useResumeOnLoad, useAdaptiveSSE, useChatHelpers, useSubmitMessage } from '~/hooks';
 import ConversationStarters from './Input/ConversationStarters';
 import { useGetMessagesByConvoId } from '~/data-provider';
 import MessagesView from './Messages/MessagesView';
@@ -18,6 +18,52 @@ import Header from './Header';
 import Footer from './Footer';
 import { cn } from '~/utils';
 import store from '~/store';
+
+// Component to handle greeting message - must be inside ChatFormProvider
+function GreetingHandler({
+  isLandingPage,
+  isLoading,
+  conversation,
+  agentsMap,
+  rootSubmission,
+  conversationId,
+}: {
+  isLandingPage: boolean;
+  isLoading: boolean;
+  conversation: any;
+  agentsMap: any;
+  rootSubmission: any;
+  conversationId: string | undefined;
+}) {
+  const { submitMessage } = useSubmitMessage();
+  const greetingSentRef = useRef(false);
+
+  // Reset greeting sent flag when conversation changes
+  useEffect(() => {
+    greetingSentRef.current = false;
+  }, [conversationId]);
+
+  // Auto-send greeting for new agent conversations
+  useEffect(() => {
+    if (
+      isLandingPage &&
+      !isLoading &&
+      conversation?.endpoint === EModelEndpoint.agents &&
+      conversation?.agent_id &&
+      !greetingSentRef.current &&
+      !rootSubmission // Don't trigger if there's already a submission in progress
+    ) {
+      const agent = agentsMap?.[conversation.agent_id];
+      if (agent?.greeting) {
+        greetingSentRef.current = true;
+        // Automatically send empty message to trigger greeting
+        submitMessage({ text: '' });
+      }
+    }
+  }, [isLandingPage, isLoading, conversation, agentsMap, submitMessage, rootSubmission, conversationId]);
+
+  return null;
+}
 
 function LoadingSpinner() {
   return (
@@ -49,6 +95,8 @@ function ChatView({ index = 0 }: { index?: number }) {
 
   const chatHelpers = useChatHelpers(index, conversationId);
   const addedChatHelpers = useAddedResponse();
+  const agentsMap = useAgentsMapContext();
+  const { conversation } = chatHelpers;
 
   useAdaptiveSSE(rootSubmission, chatHelpers, false, index);
 
@@ -80,6 +128,14 @@ function ChatView({ index = 0 }: { index?: number }) {
     <ChatFormProvider {...methods}>
       <ChatContext.Provider value={chatHelpers}>
         <AddedChatContext.Provider value={addedChatHelpers}>
+          <GreetingHandler
+            isLandingPage={isLandingPage}
+            isLoading={isLoading}
+            conversation={conversation}
+            agentsMap={agentsMap}
+            rootSubmission={rootSubmission}
+            conversationId={conversationId}
+          />
           <Presentation>
             <div className="relative flex h-full w-full flex-col">
               {!isLoading && <Header />}
