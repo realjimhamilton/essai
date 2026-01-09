@@ -50,7 +50,7 @@ export default function OpenSidebar({
           )}
           onClick={handleClick}
         >
-          <Sidebar aria-hidden="true" />
+          <Sidebar aria-hidden="true" className="h-6 w-6" style={{ color: '#43b7a1' }} />
         </Button>
       }
     />

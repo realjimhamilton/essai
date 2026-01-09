@@ -2972,3 +2972,31 @@ nav[role="navigation"] button svg circle[fill],
   stroke: #43b7a1 !important;
   stroke-width: 1 !important;
 }
+
+/* Close sidebar, new chat, and bookmark icons - filled icons */
+button svg[aria-hidden="true"] path[fill],
+button svg[aria-hidden="true"] circle[fill],
+#close-sidebar-button svg path,
+#close-sidebar-button svg circle,
+#open-sidebar-button svg path,
+#open-sidebar-button svg circle,
+#nav-new-chat-button svg path,
+#nav-new-chat-button svg circle,
+#bookmark-nav-menu-button svg path,
+#bookmark-nav-menu-button svg circle {
+  fill: #43b7a1 !important;
+  color: #43b7a1 !important;
+}
+
+/* Make filled icons appear thinner using CSS scaleY transform */
+.filled-icon-thin svg {
+  transform: scaleY(0.75) scaleX(0.95);
+  transform-origin: center;
+}
+
+.filled-icon-thin svg path,
+.filled-icon-thin svg circle,
+.filled-icon-thin svg rect {
+  fill: #43b7a1 !important;
+  color: #43b7a1 !important;
+}

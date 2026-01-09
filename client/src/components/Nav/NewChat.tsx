@@ -69,10 +69,11 @@ export default function NewChat({
               className="rounded-full border-none bg-transparent duration-0 hover:bg-surface-active-alt md:rounded-xl"
               onClick={handleToggleNav}
             >
-              <Sidebar aria-hidden="true" className="max-md:hidden" />
+              <Sidebar aria-hidden="true" className="max-md:hidden h-6 w-6" style={{ color: '#43b7a1' }} />
               <MobileSidebar
                 aria-hidden="true"
                 className="icon-lg m-1 inline-flex items-center justify-center md:hidden"
+                style={{ color: '#43b7a1' }}
               />
             </Button>
           }
@@ -91,7 +92,7 @@ export default function NewChat({
                 className="rounded-full border-none bg-transparent duration-0 hover:bg-surface-active-alt md:rounded-xl"
                 onClick={clickHandler}
               >
-                <NewChatIcon className="icon-lg" style={{ color: '#43b7a1', stroke: '#43b7a1', fill: '#43b7a1' }} />
+                <NewChatIcon className="h-6 w-6" style={{ color: '#43b7a1' }} />
               </Button>
             }
           />
