@@ -256,6 +256,34 @@ export default function AgentConfig() {
         </div>
         {/* Instructions */}
         <Instructions />
+        {/* Greeting Message */}
+        <div className="mb-4">
+          <label className={labelClass} htmlFor="greeting">
+            {localize('com_agents_greeting') || 'Greeting Message'}
+            <span className="text-xs text-token-text-secondary ml-1">
+              {localize('com_ui_optional') || '(Optional)'}
+            </span>
+          </label>
+          <Controller
+            name="greeting"
+            control={control}
+            render={({ field }) => (
+              <textarea
+                {...field}
+                value={field.value ?? ''}
+                className={cn(inputClass, 'min-h-[80px] resize-y')}
+                id="greeting"
+                placeholder={'Greetings! I\'m your Email Storyselling Bot, here to help you write daily story-driven emails that sell. Type "YES" to get started.'}
+                rows={3}
+                aria-label="Agent greeting message"
+              />
+            )}
+          />
+          <p className="mt-1 text-xs text-token-text-secondary">
+            {localize('com_agents_greeting_description') || 
+              'This message will be automatically sent when a user opens a new chat with this agent.'}
+          </p>
+        </div>
         {/* Model and Provider */}
         <div className="mb-4">
           <label className={labelClass} htmlFor="provider">

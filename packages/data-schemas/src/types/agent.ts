@@ -34,6 +34,7 @@ export interface IAgent extends Omit<Document, 'model'> {
   /** @deprecated Use ACL permissions instead */
   isCollaborative?: boolean;
   conversation_starters?: string[];
+  greeting?: string;
   tool_resources?: unknown;
   projectIds?: Types.ObjectId[];
   versions?: Omit<IAgent, 'versions'>[];

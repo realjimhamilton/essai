@@ -167,6 +167,19 @@
     ]
   },
   {
+    "name": "Firecrawl",
+    "pluginKey": "firecrawl_scrape",
+    "description": "Scrape and extract clean content from web pages. Fetches markdown/text content from any URL for analysis.",
+    "icon": "https://firecrawl.dev/favicon.ico",
+    "authConfig": [
+      {
+        "authField": "FIRECRAWL_API_KEY",
+        "label": "Firecrawl API Key",
+        "description": "Get your API key from <a href=\"https://firecrawl.dev\" target=\"_blank\">Firecrawl</a>"
+      }
+    ]
+  },
+  {
     "name": "Flux",
     "pluginKey": "flux",
     "description": "Generate images using text with the Flux API.",

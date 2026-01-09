@@ -1,3 +1,4 @@
+const crypto = require('crypto');
 const { logger } = require('@librechat/data-schemas');
 const { Constants, ViolationTypes } = require('librechat-data-provider');
 const {
@@ -172,6 +173,14 @@ const ResumableAgentController = async (req, res, next, initializeClient, addTit
       // conversationId is pre-generated, no need to update from callback
     };
 
+    // Check if we should send a greeting message for new conversations
+    const isNewConvo = !reqConversationId || reqConversationId === 'new';
+    const agent = endpointOption?.agent;
+    const greeting = agent?.greeting;
+    // Send greeting automatically on new conversations with greeting when text is empty
+    // (Frontend sends empty message to trigger greeting automatically)
+    const shouldSendGreeting = isNewConvo && greeting && (!text || text.trim() === '') && parentMessageId === null && !isRegenerate && !isContinued;
+
     // Start background generation - readyPromise resolves immediately now
     // (sync mechanism handles late subscribers)
     const startGeneration = async () => {
@@ -185,6 +194,72 @@ const ResumableAgentController = async (req, res, next, initializeClient, addTit
       }
 
       try {
+        // If this is a new conversation with a greeting, send greeting first
+        if (shouldSendGreeting) {
+          const greetingMessageId = crypto.randomUUID();
+          const greetingUserMessageId = crypto.randomUUID();
+          
+          const greetingUserMessage = {
+            messageId: greetingUserMessageId,
+            conversationId,
+            parentMessageId: Constants.NO_PARENT,
+            sender: 'User',
+            text: '',
+            isCreatedByUser: true,
+            user: userId,
+            endpoint: endpointOption.endpoint,
+          };
+
+          const greetingMessage = {
+            messageId: greetingMessageId,
+            conversationId,
+            parentMessageId: greetingUserMessageId,
+            sender: client?.sender ?? 'AI',
+            text: greeting,
+            isCreatedByUser: false,
+            user: userId,
+            endpoint: endpointOption.endpoint,
+            model: endpointOption.modelOptions?.model || endpointOption.model_parameters?.model,
+          };
+
+          if (req.body?.agent_id) {
+            greetingMessage.agent_id = req.body.agent_id;
+          }
+
+          // Save both messages
+          await saveMessage(req, greetingUserMessage, {
+            context: 'api/server/controllers/agents/request.js - greeting user message',
+          });
+          await saveMessage(req, greetingMessage, {
+            context: 'api/server/controllers/agents/request.js - greeting message',
+          });
+
+          // Emit the greeting message
+          GenerationJobManager.emitChunk(streamId, {
+            created: true,
+            message: greetingUserMessage,
+            streamId,
+          });
+
+          GenerationJobManager.emitChunk(streamId, {
+            text: greeting,
+            messageId: greetingMessageId,
+            conversationId,
+            parentMessageId: greetingUserMessageId,
+            streamId,
+          });
+
+          GenerationJobManager.emitChunk(streamId, {
+            final: true,
+            message: greetingMessage,
+            streamId,
+          });
+
+          GenerationJobManager.completeJob(streamId, 'Greeting message sent');
+          await decrementPendingRequest(userId);
+          return;
+        }
+
         const onStart = (userMsg, respMsgId, _isNewConvo) => {
           userMessage = userMsg;
 

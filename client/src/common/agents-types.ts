@@ -30,6 +30,7 @@ export type AgentForm = {
   name: string | null;
   description: string | null;
   instructions: string | null;
+  greeting?: string | null;
   model: string | null;
   model_parameters: AgentModelParameters;
   tools?: string[];

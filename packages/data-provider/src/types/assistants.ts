@@ -246,6 +246,7 @@ export type Agent = {
 export type TAgentsMap = Record<string, Agent | undefined>;
 
 export type AgentCreateParams = {
+  greeting?: string | null;
   name?: string | null;
   description?: string | null;
   avatar?: AgentAvatar | null;
@@ -273,6 +274,7 @@ export type AgentUpdateParams = {
   avatar?: AgentAvatar | null;
   file_ids?: string[];
   instructions?: string | null;
+  greeting?: string | null;
   tools?: Array<FunctionTool | string>;
   tool_resources?: ToolResources;
   provider?: AgentProvider;
