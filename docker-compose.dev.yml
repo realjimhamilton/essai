@@ -1,0 +1,34 @@
+# Docker Compose file for local development
+# This runs only MongoDB and Meilisearch services needed for LibreChat development
+
+services:
+  mongodb:
+    container_name: chat-mongodb
+    image: mongo:8.0.17
+    restart: unless-stopped
+    ports:
+      - "27017:27017"
+    volumes:
+      - ./data-node:/data/db
+    command: mongod --noauth
+    networks:
+      - librechat-dev
+
+  meilisearch:
+    container_name: chat-meilisearch
+    image: getmeili/meilisearch:latest
+    restart: unless-stopped
+    ports:
+      - "7700:7700"
+    environment:
+      - MEILI_HOST=http://localhost:7700
+      - MEILI_NO_ANALYTICS=true
+      - MEILI_MASTER_KEY=${MEILI_MASTER_KEY:-masterKey123456789012345678901234567890}
+    volumes:
+      - ./meili_data_v1.12:/meili_data
+    networks:
+      - librechat-dev
+
+networks:
+  librechat-dev:
+    driver: bridge
