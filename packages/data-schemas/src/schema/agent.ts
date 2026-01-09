@@ -88,6 +88,11 @@ const agentSchema = new Schema<IAgent>(
       type: String,
       default: undefined,
     },
+    isDeployed: {
+      type: Boolean,
+      default: false,
+      index: true,
+    },
     tool_resources: {
       type: Schema.Types.Mixed,
       default: {},

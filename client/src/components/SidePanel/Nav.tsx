@@ -1,3 +1,4 @@
+import React from 'react';
 import * as AccordionPrimitive from '@radix-ui/react-accordion';
 import {
   AccordionContent,
@@ -11,6 +12,77 @@ import { ActivePanelProvider, useActivePanel } from '~/Providers';
 import { useLocalize } from '~/hooks';
 import { cn } from '~/utils';
 
+// Wrapper component to force icon color with normal stroke width
+const ColoredIcon = ({ Icon, className, ...props }: { Icon: React.ElementType; className?: string; [key: string]: any }) => {
+  const iconRef = React.useRef<HTMLDivElement>(null);
+  const isUpdatingRef = React.useRef(false);
+  
+  React.useEffect(() => {
+    const updateStroke = () => {
+      if (isUpdatingRef.current || !iconRef.current) return;
+      
+      const svg = iconRef.current.querySelector('svg');
+      if (svg) {
+        isUpdatingRef.current = true;
+        
+          // Force stroke-width to 1.0 by overriding everything
+          // Also remove any classes that might set stroke-width
+          svg.className.baseVal = svg.className.baseVal.replace(/icon-\w+/g, '').trim();
+          svg.setAttribute('stroke-width', '1');
+          svg.style.setProperty('stroke-width', '1', 'important');
+          
+          // Force stroke color and line cap
+          svg.setAttribute('stroke', '#43b7a1');
+          svg.setAttribute('stroke-linecap', 'round');
+          svg.style.setProperty('stroke', '#43b7a1', 'important');
+          svg.style.setProperty('color', '#43b7a1', 'important');
+          
+          // Force on all child elements - be very aggressive
+          const allElements = svg.querySelectorAll('*');
+          allElements.forEach((el) => {
+            const svgEl = el as SVGElement;
+            // Remove any stroke-width attributes first
+            if (svgEl.hasAttribute('stroke-width')) {
+              svgEl.removeAttribute('stroke-width');
+            }
+            svgEl.setAttribute('stroke-width', '1');
+            svgEl.setAttribute('stroke', '#43b7a1');
+            // Set both inline style and CSS property
+            svgEl.style.cssText = `stroke: #43b7a1 !important; stroke-width: 1 !important;`;
+          });
+        
+        // Use requestAnimationFrame to reset flag after DOM updates
+        requestAnimationFrame(() => {
+          isUpdatingRef.current = false;
+        });
+      }
+    };
+    
+    updateStroke();
+    
+    // Single delayed update to catch any late renders
+    const timeout = setTimeout(updateStroke, 100);
+    
+    return () => {
+      clearTimeout(timeout);
+    };
+  }, [Icon]);
+  
+  return (
+    <div 
+      ref={iconRef}
+      style={{ 
+        color: '#43b7a1',
+        display: 'inline-block',
+        lineHeight: 0
+      }}
+      className={cn('h-4 w-4', className)}
+    >
+      <Icon {...props} color="#43b7a1" strokeWidth={1} strokeLinecap="round" size={16} />
+    </div>
+  );
+};
+
 function NavContent({ links, isCollapsed, resize }: Omit<NavProps, 'defaultActive'>) {
   const localize = useLocalize();
   const { active, setActive } = useActivePanel();
@@ -19,6 +91,7 @@ function NavContent({ links, isCollapsed, resize }: Omit<NavProps, 'defaultActiv
   return (
     <div
       data-collapsed={isCollapsed}
+      data-sidebar-nav="true"
       className="bg-token-sidebar-surface-primary hide-scrollbar group flex-shrink-0 overflow-x-hidden"
     >
       <div className="h-full">
@@ -46,8 +119,10 @@ function NavContent({ links, isCollapsed, resize }: Omit<NavProps, 'defaultActiv
                             setActive(link.id);
                             resize && resize(25);
                           }}
+                          className="text-accent [&_svg]:stroke-accent"
+                          style={{ color: '#43b7a1' }}
                         >
-                          <link.icon className="h-4 w-4 text-text-secondary" />
+                          <ColoredIcon Icon={link.icon} size={16} />
                           <span className="sr-only">{localize(link.title)}</span>
                         </Button>
                       }
@@ -66,7 +141,8 @@ function NavContent({ links, isCollapsed, resize }: Omit<NavProps, 'defaultActiv
                             <Button
                               variant="outline"
                               size="sm"
-                              className="w-full justify-start bg-transparent text-text-secondary data-[state=open]:bg-surface-secondary data-[state=open]:text-text-primary"
+                              className="w-full justify-start bg-transparent text-accent data-[state=open]:bg-surface-secondary data-[state=open]:text-text-primary [&_svg]:stroke-accent"
+                              style={{ color: '#43b7a1' }}
                               onClick={(e) => {
                                 if (link.onClick) {
                                   link.onClick(e);
@@ -74,7 +150,7 @@ function NavContent({ links, isCollapsed, resize }: Omit<NavProps, 'defaultActiv
                                 }
                               }}
                             >
-                              <link.icon className="mr-2 h-4 w-4" aria-hidden="true" />
+                              <ColoredIcon Icon={link.icon} className="mr-2" size={16} aria-hidden="true" />
                               {localize(link.title)}
                               {link.label != null && link.label && (
                                 <span

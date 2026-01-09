@@ -56,9 +56,19 @@ export default function StartupLayout({ isAuthenticated }: { isAuthenticated?: b
     isFetching,
   };
 
+  const getHeader = () => {
+    if (headerText) {
+      return localize(headerText);
+    }
+    if (location.pathname === '/login') {
+      return 'Welcome to EmailStoryselling.ai';
+    }
+    return localize(headerMap[location.pathname]);
+  };
+
   return (
     <AuthLayout
-      header={headerText ? localize(headerText) : localize(headerMap[location.pathname])}
+      header={getHeader()}
       isFetching={isFetching}
       startupConfig={startupConfig}
       startupConfigError={startupConfigError}

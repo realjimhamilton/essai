@@ -247,21 +247,12 @@ export default function AgentConfig() {
             )}
           />
         </div>
-        {/* Category */}
-        <div className="mb-4">
-          <label className={labelClass} htmlFor="category-selector">
-            {localize('com_ui_category')} <span className="text-red-500">*</span>
-          </label>
-          <AgentCategorySelector className="w-full" />
-        </div>
-        {/* Instructions */}
-        <Instructions />
         {/* Greeting Message */}
         <div className="mb-4">
           <label className={labelClass} htmlFor="greeting">
-            {localize('com_agents_greeting') || 'Greeting Message'}
+            Greeting
             <span className="text-xs text-token-text-secondary ml-1">
-              {localize('com_ui_optional') || '(Optional)'}
+              (optional)
             </span>
           </label>
           <Controller
@@ -284,6 +275,39 @@ export default function AgentConfig() {
               'This message will be automatically sent when a user opens a new chat with this agent.'}
           </p>
         </div>
+        {/* Deploy for End Users Checkbox */}
+        <div className="mb-4 border-t border-border-light pt-4">
+          <Controller
+            name="isDeployed"
+            control={control}
+            render={({ field }) => (
+              <label className="flex items-center gap-2 cursor-pointer">
+                <input
+                  type="checkbox"
+                  {...field}
+                  checked={field.value ?? false}
+                  className="h-4 w-4 rounded border-border-light text-primary focus:ring-2 focus:ring-ring-primary"
+                />
+                <span className="text-sm font-medium text-token-text-primary">
+                  Deployed
+                </span>
+              </label>
+            )}
+          />
+          <p className="mt-1 text-xs text-token-text-secondary">
+            {localize('com_agents_deployed_description') || 
+              'When enabled, this agent will be visible to non-admin users in the bot selector.'}
+          </p>
+        </div>
+        {/* Category */}
+        <div className="mb-4">
+          <label className={labelClass} htmlFor="category-selector">
+            {localize('com_ui_category')} <span className="text-red-500">*</span>
+          </label>
+          <AgentCategorySelector className="w-full" />
+        </div>
+        {/* Instructions */}
+        <Instructions />
         {/* Model and Provider */}
         <div className="mb-4">
           <label className={labelClass} htmlFor="provider">

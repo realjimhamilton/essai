@@ -17,6 +17,7 @@ const {
   PrincipalType,
   EToolResources,
   PermissionBits,
+  SystemRoles,
   actionDelimiter,
   removeNullishValues,
   CacheKeys,
@@ -529,6 +530,11 @@ const getListAgentsHandler = async (req, res) => {
       const safeSearch = escapeRegex(search.trim().slice(0, MAX_SEARCH_LEN));
       const regex = new RegExp(safeSearch, 'i');
       filter.$or = [{ name: regex }, { description: regex }];
+    }
+
+    // For non-admin users, only show deployed agents
+    if (req.user.role !== SystemRoles.ADMIN) {
+      filter.isDeployed = true;
     }
 
     // Get agent IDs the user has VIEW access to via ACL

@@ -22,14 +22,21 @@ const SubmitButton = React.memo(
             aria-label={localize('com_nav_send_message')}
             id="send-button"
             disabled={props.disabled}
+            style={{ backgroundColor: '#43b7a1' }}
             className={cn(
-              'rounded-full bg-text-primary p-1.5 text-text-primary outline-offset-4 transition-all duration-200 disabled:cursor-not-allowed disabled:text-text-secondary disabled:opacity-10',
+              'rounded-full p-1.5 outline-offset-4 transition-all duration-200 hover:bg-accent-hover disabled:cursor-not-allowed disabled:opacity-50',
             )}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.backgroundColor = '#389f8c';
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.backgroundColor = '#43b7a1';
+            }}
             data-testid="send-button"
             type="submit"
           >
-            <span className="" data-state="closed">
-              <SendIcon size={24} />
+            <span className="text-white" data-state="closed">
+              <SendIcon size={24} className="!text-white" />
             </span>
           </button>
         }

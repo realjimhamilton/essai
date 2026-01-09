@@ -86,6 +86,8 @@ module.exports = {
           900: '#031f29',
         },
         'brand-purple': 'var(--brand-purple)',
+        'accent': '#43b7a1',
+        'accent-hover': '#389f8c',
         presentation: 'var(--presentation)',
         'text-primary': 'var(--text-primary)',
         'text-secondary': 'var(--text-secondary)',

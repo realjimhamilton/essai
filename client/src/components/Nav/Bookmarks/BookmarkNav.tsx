@@ -105,9 +105,9 @@ const BookmarkNav: FC<BookmarkNavProps> = ({ tags, setTags }: BookmarkNavProps) 
               data-testid="bookmark-menu"
             >
               {tags.length > 0 ? (
-                <BookmarkFilledIcon aria-hidden="true" className="icon-lg text-text-primary" />
+                <BookmarkFilledIcon aria-hidden="true" className="icon-lg" style={{ color: '#43b7a1', fill: '#43b7a1' }} />
               ) : (
-                <BookmarkIcon aria-hidden="true" className="icon-lg text-text-primary" />
+                <BookmarkIcon aria-hidden="true" className="icon-lg" style={{ color: '#43b7a1', fill: '#43b7a1' }} />
               )}
             </Ariakit.MenuButton>
           }

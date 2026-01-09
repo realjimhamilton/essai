@@ -2,16 +2,17 @@ import { useMemo } from 'react';
 import { useMediaQuery } from '@librechat/client';
 import { useOutletContext } from 'react-router-dom';
 import { AnimatePresence, motion } from 'framer-motion';
-import { getConfigDefaults, PermissionTypes, Permissions } from 'librechat-data-provider';
+import { getConfigDefaults, PermissionTypes, Permissions, SystemRoles } from 'librechat-data-provider';
 import type { ContextType } from '~/common';
 import { PresetsMenu, HeaderNewChat, OpenSidebar } from './Menus';
 import ModelSelector from './Menus/Endpoints/ModelSelector';
+import BotSelector from './Menus/Endpoints/BotSelector';
 import { useGetStartupConfig } from '~/data-provider';
 import ExportAndShareMenu from './ExportAndShareMenu';
 import BookmarkMenu from './Menus/BookmarkMenu';
 import { TemporaryChat } from './TemporaryChat';
 import AddMultiConvo from './AddMultiConvo';
-import { useHasAccess } from '~/hooks';
+import { useHasAccess, useAuthContext } from '~/hooks';
 import { cn } from '~/utils';
 
 const defaultInterface = getConfigDefaults().interface;
@@ -19,6 +20,8 @@ const defaultInterface = getConfigDefaults().interface;
 export default function Header() {
   const { data: startupConfig } = useGetStartupConfig();
   const { navVisible, setNavVisible } = useOutletContext<ContextType>();
+  const { user } = useAuthContext();
+  const isAdmin = user?.role === SystemRoles.ADMIN;
 
   const interfaceConfig = useMemo(
     () => startupConfig?.interface ?? defaultInterface,
@@ -64,10 +67,16 @@ export default function Header() {
                 !navVisible && !isSmallScreen ? 'pl-2' : '',
               )}
             >
-              <ModelSelector startupConfig={startupConfig} />
-              {interfaceConfig.presets === true && interfaceConfig.modelSelect && <PresetsMenu />}
-              {hasAccessToBookmarks === true && <BookmarkMenu />}
-              {hasAccessToMultiConvo === true && <AddMultiConvo />}
+              {isAdmin ? (
+                <ModelSelector startupConfig={startupConfig} />
+              ) : (
+                <BotSelector startupConfig={startupConfig} />
+              )}
+              {isAdmin && interfaceConfig.presets === true && interfaceConfig.modelSelect && (
+                <PresetsMenu />
+              )}
+              {isAdmin && hasAccessToBookmarks === true && <BookmarkMenu />}
+              {isAdmin && hasAccessToMultiConvo === true && <AddMultiConvo />}
               {isSmallScreen && (
                 <>
                   <ExportAndShareMenu

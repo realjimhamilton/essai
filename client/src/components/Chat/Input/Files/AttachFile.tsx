@@ -22,7 +22,8 @@ const AttachFile = ({ disabled }: { disabled?: boolean | null }) => {
             aria-label={localize('com_sidepanel_attach_files')}
             disabled={isUploadDisabled}
             className={cn(
-              'flex size-9 items-center justify-center rounded-full p-1 transition-colors hover:bg-surface-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-opacity-50',
+              'flex size-9 items-center justify-center rounded-full p-1 transition-colors hover:bg-surface-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-opacity-50',
+              isUploadDisabled && 'opacity-50',
             )}
             onKeyDownCapture={(e) => {
               if (!inputRef.current) {
@@ -41,7 +42,7 @@ const AttachFile = ({ disabled }: { disabled?: boolean | null }) => {
               inputRef.current.click();
             }}
           >
-            <div className="flex w-full items-center justify-center gap-2">
+            <div className="flex w-full items-center justify-center gap-2" style={{ color: '#43b7a1' }}>
               <AttachmentIcon />
             </div>
           </button>

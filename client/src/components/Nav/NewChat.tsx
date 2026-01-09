@@ -91,7 +91,7 @@ export default function NewChat({
                 className="rounded-full border-none bg-transparent duration-0 hover:bg-surface-active-alt md:rounded-xl"
                 onClick={clickHandler}
               >
-                <NewChatIcon className="icon-lg text-text-primary" />
+                <NewChatIcon className="icon-lg" style={{ color: '#43b7a1', stroke: '#43b7a1', fill: '#43b7a1' }} />
               </Button>
             }
           />

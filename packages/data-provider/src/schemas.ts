@@ -222,6 +222,7 @@ export const defaultAgentFormValues = {
   description: '',
   instructions: '',
   greeting: '',
+  isDeployed: false,
   model: '',
   model_parameters: {},
   tools: [],

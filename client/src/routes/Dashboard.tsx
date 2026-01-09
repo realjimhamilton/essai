@@ -5,6 +5,7 @@ import {
   CreatePromptForm,
   EmptyPromptPreview,
 } from '~/components/Prompts';
+import CostTrackingView from '~/components/CostTracking/CostTrackingView';
 import DashboardRoute from './Layouts/Dashboard';
 
 const dashboardRoutes = {
@@ -73,8 +74,12 @@ const dashboardRoutes = {
       ],
     },
     {
+      path: 'cost-tracking',
+      element: <CostTrackingView />,
+    },
+    {
       path: '*',
-      element: <Navigate to="/d/files" replace={true} />,
+      element: <Navigate to="/d/prompts" replace={true} />,
     },
   ],
 };

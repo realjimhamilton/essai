@@ -83,6 +83,8 @@ export default function AgentSelect({
         support_contact: fullAgent.support_contact,
         // Make sure greeting is properly loaded
         greeting: fullAgent.greeting ?? null,
+        // Make sure isDeployed is properly loaded
+        isDeployed: fullAgent.isDeployed ?? false,
         avatar_file: null,
         avatar_preview: fullAgent.avatar?.filepath ?? '',
         avatar_action: null,

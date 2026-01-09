@@ -99,9 +99,27 @@ export default function AudioRecorder({
       return <MicOff className="stroke-red-500" />;
     }
     if (isLoading === true) {
-      return <Spinner className="stroke-text-secondary" />;
+      return <Spinner color="#43b7a1" />;
     }
-    return <ListeningIcon className="stroke-text-secondary" />;
+    return (
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        width="24"
+        height="24"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="#43b7a1"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        style={{ color: '#43b7a1' }}
+        aria-hidden="true"
+      >
+        <path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z" stroke="#43b7a1" />
+        <path d="M19 10v2a7 7 0 0 1-14 0v-2" stroke="#43b7a1" />
+        <line x1="12" x2="12" y1="19" y2="22" stroke="#43b7a1" />
+      </svg>
+    );
   };
 
   return (
@@ -115,7 +133,8 @@ export default function AudioRecorder({
           onClick={isListening === true ? handleStopRecording : handleStartRecording}
           disabled={disabled}
           className={cn(
-            'flex size-9 items-center justify-center rounded-full p-1 transition-colors hover:bg-surface-hover',
+            'flex size-9 items-center justify-center rounded-full p-1 transition-colors hover:bg-surface-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-opacity-50',
+            disabled && 'opacity-50',
           )}
           title={localize('com_ui_use_micrphone')}
           aria-pressed={isListening}

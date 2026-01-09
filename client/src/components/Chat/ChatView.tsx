@@ -15,7 +15,6 @@ import Presentation from './Presentation';
 import ChatForm from './Input/ChatForm';
 import Landing from './Landing';
 import Header from './Header';
-import Footer from './Footer';
 import { cn } from '~/utils';
 import store from '~/store';
 
@@ -156,10 +155,9 @@ function ChatView({ index = 0 }: { index?: number }) {
                     )}
                   >
                     <ChatForm index={index} />
-                    {isLandingPage ? <ConversationStarters /> : <Footer />}
+                    {isLandingPage && <ConversationStarters />}
                   </div>
                 </div>
-                {isLandingPage && <Footer />}
               </>
             </div>
           </Presentation>

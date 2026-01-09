@@ -227,8 +227,10 @@ export type Agent = {
   model: string | null;
   model_parameters: AgentModelParameters;
   conversation_starters?: string[];
+  greeting?: string;
   /** @deprecated Use ACL permissions instead */
   isCollaborative?: boolean;
+  isDeployed?: boolean;
   tool_resources?: AgentToolResources;
   /** @deprecated Use edges instead */
   agent_ids?: string[];
@@ -266,6 +268,7 @@ export type AgentCreateParams = {
   | 'recursion_limit'
   | 'category'
   | 'support_contact'
+  | 'isDeployed'
 >;
 
 export type AgentUpdateParams = {
@@ -275,6 +278,7 @@ export type AgentUpdateParams = {
   file_ids?: string[];
   instructions?: string | null;
   greeting?: string | null;
+  isDeployed?: boolean;
   tools?: Array<FunctionTool | string>;
   tool_resources?: ToolResources;
   provider?: AgentProvider;
