@@ -1,6 +1,6 @@
 const { logger } = require('@librechat/data-schemas');
 const { getMultiplier, getCacheMultiplier } = require('./tx');
-const { Transaction, Balance } = require('~/db/models');
+const { Transaction, Balance, Conversation } = require('~/db/models');
 
 const cancelRate = 1.15;
 
