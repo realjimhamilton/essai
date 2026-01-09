@@ -298,6 +298,26 @@ async function createStructuredTransaction(_txData) {
     ...txData,
     endpointTokenConfig: txData.endpointTokenConfig,
   });
+  
+  // Populate agent_id from conversation if available
+  if (txData.conversationId && !txData.agent_id) {
+    try {
+      const conversation = await Conversation.findOne({ conversationId: txData.conversationId }).lean();
+      if (conversation?.agent_id) {
+        transaction.agent_id = conversation.agent_id;
+      }
+    } catch (error) {
+      logger.debug('[createStructuredTransaction] Error fetching conversation for agent_id', error);
+      // Non-fatal error, continue without agent_id
+    }
+  } else if (txData.agent_id) {
+    transaction.agent_id = txData.agent_id;
+  }
+  
+  // Infer provider from model/endpoint
+  if (!transaction.provider && (txData.model || txData.valueKey)) {
+    transaction.provider = inferProvider(txData.model, txData.valueKey);
+  }
 
   calculateStructuredTokenValue(transaction);
 
