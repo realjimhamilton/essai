@@ -14,6 +14,9 @@ export interface ITransaction extends Document {
   inputTokens?: number;
   writeTokens?: number;
   readTokens?: number;
+  agent_id?: string;
+  provider?: string;
+  estimated_cost_usd?: number;
   createdAt?: Date;
   updatedAt?: Date;
 }
@@ -52,6 +55,18 @@ const transactionSchema: Schema<ITransaction> = new Schema(
     inputTokens: { type: Number },
     writeTokens: { type: Number },
     readTokens: { type: Number },
+    agent_id: {
+      type: String,
+      index: true,
+    },
+    provider: {
+      type: String,
+      index: true,
+    },
+    estimated_cost_usd: {
+      type: Number,
+      index: true,
+    },
   },
   {
     timestamps: true,
