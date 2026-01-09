@@ -17,31 +17,48 @@ const resetPassword = async () => {
   try {
     await connect();
 
-    const email = await question('Enter user email: ');
+    // Check for command line arguments
+    const emailArg = process.argv[2];
+    const passwordArg = process.argv[3];
+
+    let email, newPassword;
+
+    if (emailArg && passwordArg) {
+      // Non-interactive mode with command line arguments
+      email = emailArg;
+      newPassword = passwordArg;
+      
+      if (newPassword.length < 8) {
+        console.error('Password must be at least 8 characters!');
+        process.exit(1);
+      }
+    } else {
+      // Interactive mode
+      email = await question('Enter user email: ');
+      
+      let validPassword = false;
+      while (!validPassword) {
+        newPassword = await question('Enter new password: ');
+        if (newPassword.length < 8) {
+          console.log('Password must be at least 8 characters! Please try again.');
+          continue;
+        }
+
+        const confirmPassword = await question('Confirm new password: ');
+        if (newPassword !== confirmPassword) {
+          console.log('Passwords do not match! Please try again.');
+          continue;
+        }
+
+        validPassword = true;
+      }
+    }
+
     const user = await User.findOne({ email });
 
     if (!user) {
       console.error('User not found!');
       process.exit(1);
-    }
-
-    let validPassword = false;
-    let newPassword;
-
-    while (!validPassword) {
-      newPassword = await question('Enter new password: ');
-      if (newPassword.length < 8) {
-        console.log('Password must be at least 8 characters! Please try again.');
-        continue;
-      }
-
-      const confirmPassword = await question('Confirm new password: ');
-      if (newPassword !== confirmPassword) {
-        console.log('Passwords do not match! Please try again.');
-        continue;
-      }
-
-      validPassword = true;
     }
 
     const salt = await bcrypt.genSalt(10);

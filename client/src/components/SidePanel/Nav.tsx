@@ -141,8 +141,7 @@ function NavContent({ links, isCollapsed, resize }: Omit<NavProps, 'defaultActiv
                             <Button
                               variant="outline"
                               size="sm"
-                              className="w-full justify-start bg-transparent text-accent data-[state=open]:bg-surface-secondary data-[state=open]:text-text-primary [&_svg]:stroke-accent"
-                              style={{ color: '#43b7a1' }}
+                              className="w-full justify-start bg-transparent text-white hover:bg-accent hover:text-white data-[state=open]:bg-accent data-[state=open]:text-white [&_svg]:stroke-accent"
                               onClick={(e) => {
                                 if (link.onClick) {
                                   link.onClick(e);
@@ -151,7 +150,7 @@ function NavContent({ links, isCollapsed, resize }: Omit<NavProps, 'defaultActiv
                               }}
                             >
                               <ColoredIcon Icon={link.icon} className="mr-2" size={16} aria-hidden="true" />
-                              {localize(link.title)}
+                              <span className="text-white">{localize(link.title)}</span>
                               {link.label != null && link.label && (
                                 <span
                                   className={cn(

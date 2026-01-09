@@ -2988,6 +2988,44 @@ button svg[aria-hidden="true"] circle[fill],
   color: #43b7a1 !important;
 }
 
+/* Sidebar navigation buttons - text should be white (icons stay teal via other rules) */
+#controls-nav button,
+#controls-nav button span,
+.sidenav button,
+.sidenav button span,
+.bg-token-sidebar-surface-primary button,
+.bg-token-sidebar-surface-primary button span {
+  color: white !important;
+}
+
+/* Ensure text stays white on hover (when background becomes teal) */
+#controls-nav button:hover,
+#controls-nav button:hover span,
+.sidenav button:hover,
+.sidenav button:hover span,
+.bg-token-sidebar-surface-primary button:hover,
+.bg-token-sidebar-surface-primary button:hover span {
+  color: white !important;
+}
+
+/* Ensure text stays white when panel is open */
+#controls-nav button[data-state="open"],
+#controls-nav button[data-state="open"] span,
+.sidenav button[data-state="open"],
+.sidenav button[data-state="open"] span,
+.bg-token-sidebar-surface-primary button[data-state="open"],
+.bg-token-sidebar-surface-primary button[data-state="open"] span {
+  color: white !important;
+}
+
+/* Icons should remain teal - override text color for SVGs specifically */
+#controls-nav button svg,
+.sidenav button svg,
+.bg-token-sidebar-surface-primary button svg {
+  color: #43b7a1 !important;
+  stroke: #43b7a1 !important;
+}
+
 /* Make filled icons appear thinner using CSS scaleY transform */
 .filled-icon-thin svg {
   transform: scaleY(0.75) scaleX(0.95);

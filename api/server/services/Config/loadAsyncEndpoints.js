@@ -26,7 +26,19 @@ async function loadAsyncEndpoints() {
     }
   }
 
-  const google = serviceKey || isGoogleKeyProvided ? { userProvide: googleUserProvides } : false;
+  // Return config if we have either service key or user-provided key configured
+  if (serviceKey) {
+    // Service account found - use Vertex AI (admin-provided, not user-provided)
+    const google = { userProvide: false };
+    return { google };
+  } else if (isGoogleKeyProvided) {
+    // API key configured (either actual key or 'user_provided')
+    const google = { userProvide: googleUserProvides ?? false };
+    return { google };
+  } else {
+    // No Google configuration found
+    return { google: false };
+  }
 
   return { google };
 }
