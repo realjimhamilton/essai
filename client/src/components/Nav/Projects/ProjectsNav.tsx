@@ -51,8 +51,8 @@ const ProjectsNav: FC<ProjectsNavProps> = () => {
         <CreateProjectDialog
           open={showCreateDialog}
           onOpenChange={setShowCreateDialog}
-          onCreate={async (name, systemPrompt, defaultPresetId) => {
-            await createProject(name, systemPrompt, defaultPresetId);
+          onCreate={async (name, description, systemPrompt) => {
+            await createProject(name, description, systemPrompt);
             setShowCreateDialog(false);
           }}
         />

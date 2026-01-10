@@ -30,16 +30,16 @@ export default function useProjects() {
   const [projectToEdit, setProjectToEdit] = useState<TProject | null>(null);
 
   const createProject = useCallback(
-    async (name: string, systemPrompt?: string, defaultPresetId?: string, ragFileIds?: string[]) => {
+    async (name: string, description?: string, systemPrompt?: string, ragFileIds?: string[]) => {
       try {
         const project = await createMutation.mutateAsync({
           name,
+          description: description || null,
           systemPrompt: systemPrompt || null,
-          defaultPresetId: defaultPresetId || null,
           ragFileIds: ragFileIds || [],
         });
         showToast({
-          message: localize('com_ui_project_created', { name: project.name }),
+          message: 'Project Created',
           showIcon: false,
         });
         return project;
@@ -79,7 +79,7 @@ export default function useProjects() {
   const updateProject = useCallback(
     async (
       projectId: string,
-      updates: { systemPrompt?: string; defaultPresetId?: string; ragFileIds?: string[] },
+      updates: { description?: string; systemPrompt?: string; ragFileIds?: string[] },
     ) => {
       try {
         const project = await updateMutation.mutateAsync({ projectId, payload: updates });

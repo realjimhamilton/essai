@@ -4,7 +4,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { QueryKeys } from 'librechat-data-provider';
 import { useQueryClient } from '@tanstack/react-query';
 import { DropdownPopup, Spinner, useToastContext } from '@librechat/client';
-import { Ellipsis, Share2, CopyPlus, Archive, Pen, Trash } from 'lucide-react';
+import { Ellipsis, Share2, CopyPlus, Archive, Pen, Trash, FolderKanban } from 'lucide-react';
 import type { MouseEvent } from 'react';
 import type { TMessage } from 'librechat-data-provider';
 import {
@@ -12,17 +12,20 @@ import {
   useDeleteConversationMutation,
   useGetStartupConfig,
   useArchiveConvoMutation,
+  useUpdateConversationMutation,
 } from '~/data-provider';
 import { useLocalize, useNavigateToConvo, useNewConvo } from '~/hooks';
 import { NotificationSeverity } from '~/common';
 import { useChatContext } from '~/Providers';
 import DeleteButton from './DeleteButton';
 import ShareButton from './ShareButton';
+import { MoveToProjectDialog } from './MoveToProjectDialog';
 import { cn } from '~/utils';
 
 function ConvoOptions({
   conversationId,
   title,
+  project_id,
   retainView,
   renameHandler,
   isPopoverActive,
@@ -32,6 +35,7 @@ function ConvoOptions({
 }: {
   conversationId: string | null;
   title: string | null;
+  project_id?: string | null;
   retainView: () => void;
   renameHandler: (e: MouseEvent) => void;
   isPopoverActive: boolean;
@@ -49,6 +53,10 @@ function ConvoOptions({
   const navigate = useNavigate();
   const { conversationId: currentConvoId } = useParams();
   const { newConversation } = useNewConvo();
+  const updateConvoMutation = useUpdateConversationMutation(conversationId || '');
+  
+  const [showMoveDialog, setShowMoveDialog] = useState(false);
+  const moveButtonRef = useRef<HTMLButtonElement>(null);
 
   const menuId = useId();
   const shareButtonRef = useRef<HTMLButtonElement>(null);
@@ -183,6 +191,40 @@ function ConvoOptions({
     });
   }, [conversationId, duplicateConversation]);
 
+  const handleMoveToProject = useCallback(() => {
+    setShowMoveDialog(true);
+  }, []);
+
+  const handleMove = useCallback(
+    async (newProjectId: string | null) => {
+      if (!conversationId) {
+        return;
+      }
+      try {
+        await updateConvoMutation.mutateAsync({
+          conversationId,
+          project_id: newProjectId,
+        });
+        // Force refetch of all conversation queries to update UI
+        queryClient.invalidateQueries([QueryKeys.allConversations], { exact: false });
+        queryClient.invalidateQueries([QueryKeys.archivedConversations], { exact: false });
+        showToast({
+          message: newProjectId ? 'Conversation moved to project' : 'Conversation removed from project',
+          showIcon: false,
+        });
+        retainView();
+        setIsPopoverActive(false);
+      } catch (error) {
+        showToast({
+          message: 'Error moving conversation',
+          status: 'error',
+          showIcon: true,
+        });
+      }
+    },
+    [conversationId, updateConvoMutation, showToast, retainView, queryClient, setIsPopoverActive],
+  );
+
   const dropdownItems = useMemo(
     () => [
       {
@@ -211,6 +253,16 @@ function ConvoOptions({
         ) : (
           <CopyPlus className="icon-sm mr-2 text-text-primary" aria-hidden="true" />
         ),
+      },
+      {
+        label: 'Move to Project',
+        onClick: handleMoveToProject,
+        icon: <FolderKanban className="icon-sm mr-2 text-text-primary" aria-hidden="true" />,
+        ariaHasPopup: 'dialog' as const,
+        ariaControls: 'move-to-project-dialog',
+        hideOnClick: false,
+        ref: moveButtonRef,
+        render: (props) => <button {...props} />,
       },
       {
         label: localize('com_ui_archive'),
@@ -340,6 +392,15 @@ function ConvoOptions({
           showDeleteDialog={showDeleteDialog}
           conversationId={conversationId ?? ''}
           setShowDeleteDialog={setShowDeleteDialog}
+        />
+      )}
+      {showMoveDialog && (
+        <MoveToProjectDialog
+          open={showMoveDialog}
+          onOpenChange={setShowMoveDialog}
+          onMove={handleMove}
+          currentProjectId={project_id}
+          conversationTitle={title || undefined}
         />
       )}
     </>

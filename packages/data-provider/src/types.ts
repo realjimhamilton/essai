@@ -237,7 +237,8 @@ export type TUpdateUserKeyRequest = {
 
 export type TUpdateConversationRequest = {
   conversationId: string;
-  title: string;
+  title?: string;
+  project_id?: string | null;
 };
 
 export type TUpdateConversationResponse = TConversation;

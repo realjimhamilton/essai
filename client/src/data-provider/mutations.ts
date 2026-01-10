@@ -35,6 +35,15 @@ export const useUpdateConversationMutation = (
         const targetId = payload.conversationId || id;
         queryClient.setQueryData([QueryKeys.conversation, targetId], updatedConvo);
         updateConvoInAllQueries(queryClient, targetId, () => updatedConvo);
+        
+        // Invalidate project queries if project_id changed
+        if (payload.project_id !== undefined) {
+          // Invalidate all conversation queries (including project-specific ones)
+          queryClient.invalidateQueries([QueryKeys.allConversations], { exact: false });
+          queryClient.invalidateQueries([QueryKeys.archivedConversations], { exact: false });
+          // Also invalidate projects query to refresh project lists
+          queryClient.invalidateQueries([QueryKeys.projects]);
+        }
       },
     },
   );

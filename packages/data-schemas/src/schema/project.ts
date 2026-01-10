@@ -3,6 +3,7 @@ import { Schema, Document, Types } from 'mongoose';
 export interface IMongoProject extends Document {
   name: string;
   user: string;
+  description?: string;
   systemPrompt?: string;
   defaultPresetId?: string;
   ragFileIds?: string[];
@@ -23,6 +24,10 @@ const projectSchema = new Schema<IMongoProject>(
       type: String,
       required: true,
       index: true,
+    },
+    description: {
+      type: String,
+      default: null,
     },
     systemPrompt: {
       type: String,

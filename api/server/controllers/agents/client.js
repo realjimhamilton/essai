@@ -49,7 +49,6 @@ const BaseClient = require('~/app/clients/BaseClient');
 const { getRoleByName } = require('~/models/Role');
 const { loadAgent } = require('~/models/Agent');
 const { getMCPManager } = require('~/config');
-const db = require('~/models');
 
 const omitTitleOptions = new Set([
   'stream',

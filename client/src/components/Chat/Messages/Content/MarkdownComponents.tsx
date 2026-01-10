@@ -115,7 +115,7 @@ export const a: React.ElementType = memo(({ href, children }: TAnchorProps) => {
 
   if (!file_id || !filename) {
     return (
-      <a href={href} {...props}>
+      <a href={href} {...props} className="!text-[#43b7a1] !font-bold underline">
         {children}
       </a>
     );
@@ -158,6 +158,7 @@ export const a: React.ElementType = memo(({ href, children }: TAnchorProps) => {
           : `${domainServerBaseUrl}/files/${filepath}`
       }
       {...props}
+      className="!text-[#43b7a1] !font-bold underline"
     >
       {children}
     </a>

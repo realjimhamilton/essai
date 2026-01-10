@@ -7,6 +7,19 @@ import {
 } from '~/components/Prompts';
 import CostTrackingView from '~/components/CostTracking/CostTrackingView';
 import DashboardRoute from './Layouts/Dashboard';
+import { useAuthContext } from '~/hooks';
+import { SystemRoles } from 'librechat-data-provider';
+
+function AdminProtectedCostTracking() {
+  const { user } = useAuthContext();
+  const isAdmin = user?.role === SystemRoles.ADMIN;
+  
+  if (!isAdmin) {
+    return <Navigate to="/" replace={true} />;
+  }
+  
+  return <CostTrackingView />;
+}
 
 const dashboardRoutes = {
   path: 'd/*',
@@ -75,7 +88,7 @@ const dashboardRoutes = {
     },
     {
       path: 'cost-tracking',
-      element: <CostTrackingView />,
+      element: <AdminProtectedCostTracking />,
     },
     {
       path: '*',

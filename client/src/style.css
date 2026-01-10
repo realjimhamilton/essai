@@ -834,8 +834,8 @@ pre {
   margin-top: 1.2em;
 }
 .prose :where(a):not(:where([class~='not-prose'] *)) {
-  color: var(--tw-prose-links);
-  font-weight: 500;
+  color: #43b7a1 !important;
+  font-weight: 700 !important;
   text-decoration: underline;
 }
 .prose :where(strong):not(:where([class~='not-prose'] *)) {
@@ -1043,7 +1043,7 @@ pre {
   --tw-prose-body: #424242;
   --tw-prose-headings: #111827;
   --tw-prose-lead: #4b5563;
-  --tw-prose-links: #0066cc;
+  --tw-prose-links: #43b7a1;
   --tw-prose-bold: #111827;
   --tw-prose-counters: #6b7280;
   --tw-prose-bullets: #d1d5db;
@@ -1059,7 +1059,7 @@ pre {
   --tw-prose-invert-body: #d1d5db;
   --tw-prose-invert-headings: #fff;
   --tw-prose-invert-lead: #9ca3af;
-  --tw-prose-invert-links: #fff;
+  --tw-prose-invert-links: #43b7a1;
   --tw-prose-invert-bold: #fff;
   --tw-prose-invert-counters: #9ca3af;
   --tw-prose-invert-bullets: #4b5563;
@@ -1933,6 +1933,21 @@ html {
     0 5px 8px -4px rgba(67, 90, 111, 0.3);
   flex-shrink: 0;
   pointer-events: all;
+}
+
+/* Project toast custom color */
+.project-toast-custom,
+.alert-root.project-toast-custom {
+  background-color: #43b7a1 !important;
+  border-color: #43b7a1 !important;
+  color: white !important;
+}
+
+/* Override any Tailwind classes for project toasts */
+.project-toast-custom.bg-\\[\\#02855E\\],
+.project-toast-custom.border-\\[\\#02855E\\] {
+  background-color: #43b7a1 !important;
+  border-color: #43b7a1 !important;
 }
 
 @-webkit-keyframes toast-open {

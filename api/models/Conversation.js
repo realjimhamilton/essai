@@ -142,9 +142,15 @@ module.exports = {
             }
           }
         }
-      } else if (project_id) {
-        // For existing conversations, just update the project_id reference
-        update.project_id = project_id;
+      } else if (project_id !== undefined) {
+        // For existing conversations, update the project_id reference (can be null to remove)
+        if (project_id === null || project_id === '') {
+          // Don't set project_id in update, we'll unset it instead
+          // Remove project_id from update if it was set
+          delete update.project_id;
+        } else {
+          update.project_id = project_id;
+        }
       }
 
       if (req?.body?.isTemporary) {
@@ -162,8 +168,20 @@ module.exports = {
 
       /** @type {{ $set: Partial<TConversation>; $unset?: Record<keyof TConversation, number> }} */
       const updateOperation = { $set: update };
+      
+      // If project_id was set to null, unset it
+      if (project_id !== undefined && (project_id === null || project_id === '')) {
+        if (!updateOperation.$unset) {
+          updateOperation.$unset = {};
+        }
+        updateOperation.$unset.project_id = 1;
+      }
+      
       if (metadata && metadata.unsetFields && Object.keys(metadata.unsetFields).length > 0) {
-        updateOperation.$unset = metadata.unsetFields;
+        if (!updateOperation.$unset) {
+          updateOperation.$unset = {};
+        }
+        Object.assign(updateOperation.$unset, metadata.unsetFields);
       }
 
       /** Note: the resulting Model object is necessary for Meilisearch operations */
@@ -219,12 +237,13 @@ module.exports = {
     const filters = [{ user }];
     
     // Filter by project_id if provided
-    if (project_id) {
-      filters.push({ project_id });
+    if (project_id !== undefined && project_id !== null && project_id !== '') {
+      // Only show conversations that explicitly have this project_id
+      filters.push({ project_id: String(project_id) });
     } else {
       // If project_id is explicitly null or not provided, only show conversations without a project
       // This allows showing non-project chats separately
-      filters.push({ $or: [{ project_id: { $exists: false } }, { project_id: null }] });
+      filters.push({ $or: [{ project_id: { $exists: false } }, { project_id: null }, { project_id: '' }] });
     }
     if (isArchived) {
       filters.push({ isArchived: true });

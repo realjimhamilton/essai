@@ -50,7 +50,7 @@ router.get('/:projectId', async (req, res) => {
  */
 router.post('/', async (req, res) => {
   try {
-    const { name, systemPrompt, defaultPresetId, ragFileIds } = req.body || {};
+    const { name, description, systemPrompt, ragFileIds } = req.body || {};
     
     if (!name || typeof name !== 'string' || name.trim().length === 0) {
       return res.status(400).json({ message: 'Project name is required' });
@@ -58,8 +58,8 @@ router.post('/', async (req, res) => {
 
     const project = await saveProject(req.user.id, {
       name: name.trim(),
+      description: description || null,
       systemPrompt: systemPrompt || null,
-      defaultPresetId: defaultPresetId || null,
       ragFileIds: Array.isArray(ragFileIds) ? ragFileIds : [],
     });
 
@@ -81,7 +81,7 @@ router.post('/', async (req, res) => {
 router.patch('/:projectId', async (req, res) => {
   try {
     const { projectId } = req.params;
-    const { name, systemPrompt, defaultPresetId, ragFileIds } = req.body || {};
+    const { name, description, systemPrompt, ragFileIds } = req.body || {};
 
     const update = {};
     if (name !== undefined) {
@@ -90,11 +90,11 @@ router.patch('/:projectId', async (req, res) => {
       }
       update.name = name.trim();
     }
+    if (description !== undefined) {
+      update.description = description || null;
+    }
     if (systemPrompt !== undefined) {
       update.systemPrompt = systemPrompt || null;
-    }
-    if (defaultPresetId !== undefined) {
-      update.defaultPresetId = defaultPresetId || null;
     }
     if (ragFileIds !== undefined) {
       update.ragFileIds = Array.isArray(ragFileIds) ? ragFileIds : [];

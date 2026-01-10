@@ -159,21 +159,27 @@ const getProject = async (userId, projectId) => {
  */
 const saveProject = async (userId, projectData) => {
   try {
-    const { _id, name, systemPrompt, defaultPresetId, ragFileIds } = projectData;
+    const { _id, name, description, systemPrompt, ragFileIds } = projectData;
     
     const update = {
       user: userId,
       name,
+      description: description ?? null,
       systemPrompt: systemPrompt ?? null,
-      defaultPresetId: defaultPresetId ?? null,
       ragFileIds: Array.isArray(ragFileIds) ? ragFileIds : [],
     };
 
     if (_id) {
-      // Update existing project
+      // Update existing project - only update provided fields
+      const updateFields = {};
+      if (name !== undefined) updateFields.name = name;
+      if (description !== undefined) updateFields.description = description ?? null;
+      if (systemPrompt !== undefined) updateFields.systemPrompt = systemPrompt ?? null;
+      if (ragFileIds !== undefined) updateFields.ragFileIds = Array.isArray(ragFileIds) ? ragFileIds : [];
+      
       const project = await Project.findOneAndUpdate(
         { _id, user: userId },
-        { $set: update },
+        { $set: updateFields },
         { new: true, lean: true }
       );
       return project;

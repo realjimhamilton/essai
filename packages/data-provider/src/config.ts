@@ -893,6 +893,11 @@ export const memorySchema = z.object({
       }),
     ])
     .optional(),
+  // Multi-layer memory settings
+  enabled: z.boolean().optional().default(true),
+  vectorSearchEnabled: z.boolean().optional().default(false),
+  maxChunksPerRequest: z.number().optional().default(5),
+  summaryIntervalMessages: z.number().optional().default(10),
 });
 
 export type TMemoryConfig = DeepPartial<z.infer<typeof memorySchema>>;

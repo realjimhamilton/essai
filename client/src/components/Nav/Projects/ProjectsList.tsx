@@ -120,8 +120,8 @@ const ProjectsList: React.FC<ProjectsListProps> = ({ selectedProjectId, setSelec
         <CreateProjectDialog
           open={showCreateDialog}
           onOpenChange={setShowCreateDialog}
-          onCreate={async (name, systemPrompt, defaultPresetId) => {
-            await createProject(name, systemPrompt, defaultPresetId);
+          onCreate={async (name, description, systemPrompt) => {
+            await createProject(name, description, systemPrompt);
             setShowCreateDialog(false);
           }}
         />
@@ -142,8 +142,8 @@ const ProjectsList: React.FC<ProjectsListProps> = ({ selectedProjectId, setSelec
                 await renameProject(editingProject._id, updates.name);
               }
               await updateProject(editingProject._id, {
+                description: updates.description,
                 systemPrompt: updates.systemPrompt,
-                defaultPresetId: updates.defaultPresetId,
               });
             }
             setEditingProject(null);
@@ -219,7 +219,7 @@ const ProjectItem: React.FC<ProjectItemProps> = ({
     },
     {
       enabled: isExpanded && !!projectId,
-      staleTime: 30000,
+      staleTime: 0, // Always refetch when project is expanded to get latest data
     },
   );
 

@@ -17,6 +17,13 @@ export function Toast() {
     [NotificationSeverity.ERROR]: 'border-[#E02F1F] bg-[#E02F1F]',
   };
 
+  // Check if this is a project-related toast and use custom accent color
+  const projectMessages = ['Project Created', 'Conversation moved to project', 'Conversation removed from project'];
+  const isProjectToast = projectMessages.includes(toast.message);
+  const customClassName = isProjectToast
+    ? 'project-toast-custom'
+    : severityClassName[toast.severity];
+
   return (
     <RadixToast.Root
       open={toast.open}
@@ -29,9 +36,8 @@ export function Toast() {
     >
       <div className="w-full p-1 text-center md:w-auto md:text-justify">
         <div
-          className={`alert-root pointer-events-auto inline-flex flex-row gap-2 rounded-md border px-3 py-2 font-bold text-white ${
-            severityClassName[toast.severity]
-          }`}
+          className={`alert-root pointer-events-auto inline-flex flex-row gap-2 rounded-md border px-3 py-2 font-bold text-white ${customClassName}`}
+          style={isProjectToast ? { backgroundColor: '#43b7a1', borderColor: '#43b7a1', color: 'white' } : undefined}
         >
           {toast.showIcon && (
             <div className="mt-1 flex-shrink-0 flex-grow-0">

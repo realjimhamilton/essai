@@ -1,7 +1,10 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
+import { useQueryClient } from '@tanstack/react-query';
 import { useCostSummaryQuery, useCostByAgentQuery, useCostByPeriodQuery } from '~/data-provider/CostTracking/queries';
+import { useListAgentsQuery } from '~/data-provider/Agents/queries';
 import { useAuthContext } from '~/hooks';
-import { SystemRoles } from 'librechat-data-provider';
+import { useAgentsMapContext } from '~/Providers';
+import { SystemRoles, PermissionBits, isEphemeralAgentId, QueryKeys, EModelEndpoint, dataService } from 'librechat-data-provider';
 import DashBreadcrumb from '~/routes/Layouts/DashBreadcrumb';
 
 export default function CostTrackingView() {
@@ -11,6 +14,78 @@ export default function CostTrackingView() {
   const [dateRange, setDateRange] = useState<{ start?: string; end?: string }>({});
 
   const isAdmin = user?.role === SystemRoles.ADMIN;
+  const queryClient = useQueryClient();
+
+  // Try to use agentsMap context first (might be already loaded)
+  const agentsMapContext = useAgentsMapContext();
+  
+  // State for fetched agents
+  const [agentsData, setAgentsData] = useState<any[]>([]);
+  const [agentsLoading, setAgentsLoading] = useState(false);
+  const [agentsError, setAgentsError] = useState<Error | null>(null);
+
+  // Fetch agents directly - bypass query hook to avoid enabled check issues
+  useEffect(() => {
+    if (!isAdmin) {
+      return;
+    }
+    
+    // Priority 1: use context if available and has data
+    if (agentsMapContext && Object.keys(agentsMapContext).length > 0) {
+      const contextAgents = Object.values(agentsMapContext)
+        .filter((agent: any) => agent && agent.id && !isEphemeralAgentId(agent.id))
+        .map((agent: any) => ({
+          id: agent.id,
+          name: agent.name || agent.id,
+        }));
+      if (contextAgents.length > 0) {
+        const sorted = contextAgents.sort((a: any, b: any) => {
+          const nameA = (a.name || '').toLowerCase();
+          const nameB = (b.name || '').toLowerCase();
+          return nameA.localeCompare(nameB);
+        });
+        console.log('[CostTracking] Using context agents:', sorted.length);
+        setAgentsData(sorted);
+        return;
+      }
+    }
+    
+    // Priority 2: fetch directly from API
+    if (agentsData.length === 0) {
+      console.log('[CostTracking] Fetching agents directly from API...');
+      setAgentsLoading(true);
+      dataService
+        .listAgents({ requiredPermission: PermissionBits.VIEW, limit: 1000 })
+        .then((res: any) => {
+          console.log('[CostTracking] Direct fetch response:', res);
+          if (res?.data && Array.isArray(res.data) && res.data.length > 0) {
+            const agents = res.data
+              .filter((agent: any) => agent && agent.id && !isEphemeralAgentId(agent.id))
+              .map((agent: any) => ({
+                id: agent.id,
+                name: agent.name || agent.id,
+              }))
+              .sort((a: any, b: any) => {
+                const nameA = (a.name || '').toLowerCase();
+                const nameB = (b.name || '').toLowerCase();
+                return nameA.localeCompare(nameB);
+              });
+            console.log('[CostTracking] Fetched agents:', agents.length, agents);
+            setAgentsData(agents);
+          } else {
+            console.log('[CostTracking] No agents in response', res);
+          }
+          setAgentsLoading(false);
+        })
+        .catch((err) => {
+          console.error('[CostTracking] Error fetching agents:', err);
+          setAgentsError(err);
+          setAgentsLoading(false);
+        });
+    }
+  }, [isAdmin, agentsMapContext, agentsData.length]);
+  
+  console.log('[CostTracking] Final agentsData:', agentsData.length, agentsData);
 
   const summaryQuery = useCostSummaryQuery(dateRange);
   const agentsQuery = useCostByAgentQuery({ ...dateRange, agentId: agentFilter || undefined });
@@ -89,13 +164,25 @@ export default function CostTrackingView() {
           </div>
           <div className="flex flex-col">
             <label className="mb-1 text-sm font-medium text-token-text-primary">Filter by Agent</label>
-            <input
-              type="text"
-              placeholder="Agent ID (optional)"
+            <select
               value={agentFilter}
               onChange={(e) => setAgentFilter(e.target.value)}
               className="rounded border border-border-light bg-surface-primary px-3 py-2 text-token-text-primary"
-            />
+              disabled={agentsLoading && agentsData.length === 0}
+            >
+              <option value="">All Agents</option>
+              {agentsLoading && agentsData.length === 0 && <option disabled>Loading agents...</option>}
+              {agentsError && <option disabled>Error loading agents</option>}
+              {agentsData && agentsData.length > 0 ? (
+                agentsData.map((agent: any) => (
+                  <option key={agent.id} value={agent.id}>
+                    {agent.name || agent.id}
+                  </option>
+                ))
+              ) : (
+                !agentsLoading && !agentsError && agentsData.length === 0 && <option disabled>No agents found</option>
+              )}
+            </select>
           </div>
           <div className="flex items-end">
             <button
@@ -172,7 +259,7 @@ export default function CostTrackingView() {
               <table className="w-full">
                 <thead className="bg-surface-secondary">
                   <tr>
-                    <th className="px-4 py-3 text-left text-sm font-medium text-token-text-primary">Agent ID</th>
+                    <th className="px-4 py-3 text-left text-sm font-medium text-token-text-primary">Agent Name</th>
                     <th className="px-4 py-3 text-right text-sm font-medium text-token-text-primary">Total Cost</th>
                     <th className="px-4 py-3 text-right text-sm font-medium text-token-text-primary">
                       Transactions
@@ -187,7 +274,7 @@ export default function CostTrackingView() {
                 <tbody className="divide-y divide-border-light">
                   {agentsQuery.data.map((agent) => (
                     <tr key={agent.agent_id} className="hover:bg-surface-secondary">
-                      <td className="px-4 py-3 text-sm text-token-text-primary">{agent.agent_id}</td>
+                      <td className="px-4 py-3 text-sm text-token-text-primary">{agent.agent_name || agent.agent_id}</td>
                       <td className="px-4 py-3 text-right text-sm font-medium text-token-text-primary">
                         {formatCurrency(agent.totalCost)}
                       </td>

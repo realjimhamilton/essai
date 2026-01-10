@@ -34,6 +34,7 @@ router.get('/', async (req, res) => {
   const search = req.query.search ? decodeURIComponent(req.query.search) : undefined;
   const sortBy = req.query.sortBy || 'updatedAt';
   const sortDirection = req.query.sortDirection || 'desc';
+  const project_id = req.query.project_id || undefined;
 
   let tags;
   if (req.query.tags) {
@@ -49,6 +50,7 @@ router.get('/', async (req, res) => {
       search,
       sortBy,
       sortDirection,
+      project_id: project_id === 'null' || project_id === 'undefined' ? null : project_id,
     });
     res.status(200).json(result);
   } catch (error) {
@@ -194,26 +196,30 @@ const MAX_CONVO_TITLE_LENGTH = 1024;
  * @returns {object} 201 - The updated conversation object.
  */
 router.post('/update', validateConvoAccess, async (req, res) => {
-  const { conversationId, title } = req.body.arg ?? {};
+  const { conversationId, title, project_id } = req.body.arg ?? {};
 
   if (!conversationId) {
     return res.status(400).json({ error: 'conversationId is required' });
   }
 
-  if (title === undefined) {
-    return res.status(400).json({ error: 'title is required' });
+  const updateData = { conversationId };
+
+  if (title !== undefined) {
+    if (typeof title !== 'string') {
+      return res.status(400).json({ error: 'title must be a string' });
+    }
+    updateData.title = title.trim().slice(0, MAX_CONVO_TITLE_LENGTH);
   }
 
-  if (typeof title !== 'string') {
-    return res.status(400).json({ error: 'title must be a string' });
+  if (project_id !== undefined) {
+    // Allow setting to null to remove from project
+    updateData.project_id = project_id === null || project_id === '' ? null : project_id;
   }
-
-  const sanitizedTitle = title.trim().slice(0, MAX_CONVO_TITLE_LENGTH);
 
   try {
     const dbResponse = await saveConvo(
       req,
-      { conversationId, title: sanitizedTitle },
+      updateData,
       { context: `POST /api/convos/update ${conversationId}` },
     );
     res.status(201).json(dbResponse);

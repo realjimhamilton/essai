@@ -18,6 +18,7 @@ export interface CostSummary {
 
 export interface CostByAgent {
   agent_id: string;
+  agent_name?: string;
   totalCost: number;
   totalTransactions: number;
   totalInputTokens: number;

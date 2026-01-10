@@ -857,6 +857,7 @@ export const tProjectSchema = z.object({
   _id: z.string().optional(),
   name: z.string(),
   user: z.string().optional(),
+  description: z.string().nullable().optional(),
   systemPrompt: z.string().nullable().optional(),
   defaultPresetId: z.string().nullable().optional(),
   ragFileIds: z.array(z.string()).optional().default([]),

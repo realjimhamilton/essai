@@ -7,6 +7,7 @@ import type { ContextType } from '~/common';
 import { PresetsMenu, HeaderNewChat, OpenSidebar } from './Menus';
 import ModelSelector from './Menus/Endpoints/ModelSelector';
 import BotSelector from './Menus/Endpoints/BotSelector';
+import ProjectSelector from './Menus/Endpoints/ProjectSelector';
 import { useGetStartupConfig } from '~/data-provider';
 import ExportAndShareMenu from './ExportAndShareMenu';
 import BookmarkMenu from './Menus/BookmarkMenu';
@@ -72,6 +73,7 @@ export default function Header() {
               ) : (
                 <BotSelector startupConfig={startupConfig} />
               )}
+              <ProjectSelector startupConfig={startupConfig} />
               {/* PresetsMenu removed for end user */}
               {isAdmin && hasAccessToBookmarks === true && <BookmarkMenu />}
               {/* AddMultiConvo removed for end user */}

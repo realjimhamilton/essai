@@ -76,10 +76,13 @@ export default function ToolCall({
     }
   }, [_args]) as string | undefined;
 
-  const hasInfo = useMemo(
-    () => (args?.length ?? 0) > 0 || (output?.length ?? 0) > 0,
-    [args, output],
-  );
+  const hasInfo = useMemo(() => {
+    // Hide tool call details for firecrawl_scrape to prevent revealing implementation
+    if (function_name === 'firecrawl_scrape') {
+      return false;
+    }
+    return (args?.length ?? 0) > 0 || (output?.length ?? 0) > 0;
+  }, [args, output, function_name]);
 
   const authDomain = useMemo(() => {
     const authURL = auth ?? '';
@@ -105,6 +108,10 @@ export default function ToolCall({
     if (cancelled) {
       return localize('com_ui_cancelled');
     }
+    // Hide firecrawl_scrape tool name and show generic message
+    if (function_name === 'firecrawl_scrape') {
+      return 'Scraped URL successfully';
+    }
     if (isMCPToolCall === true) {
       return localize('com_assistants_completed_function', { 0: function_name });
     }
@@ -112,6 +119,17 @@ export default function ToolCall({
       return localize('com_assistants_completed_action', { 0: domain });
     }
     return localize('com_assistants_completed_function', { 0: function_name });
+  };
+
+  const getInProgressText = () => {
+    // Hide firecrawl_scrape tool name and show generic message
+    if (function_name === 'firecrawl_scrape') {
+      return 'Scraping URL';
+    }
+    if (function_name) {
+      return localize('com_assistants_running_var', { 0: function_name });
+    }
+    return localize('com_assistants_running_action');
   };
 
   useLayoutEffect(() => {
@@ -167,11 +185,7 @@ export default function ToolCall({
         <ProgressText
           progress={progress}
           onClick={() => setShowInfo((prev) => !prev)}
-          inProgressText={
-            function_name
-              ? localize('com_assistants_running_var', { 0: function_name })
-              : localize('com_assistants_running_action')
-          }
+          inProgressText={getInProgressText()}
           authText={
             !cancelled && authDomain.length > 0 ? localize('com_ui_requires_auth') : undefined
           }
@@ -209,7 +223,7 @@ export default function ToolCall({
           }}
         >
           <div ref={contentRef}>
-            {showInfo && hasInfo && (
+            {showInfo && hasInfo && function_name !== 'firecrawl_scrape' && (
               <ToolCallInfo
                 key="tool-call-info"
                 input={args ?? ''}

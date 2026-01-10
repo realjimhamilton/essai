@@ -1,13 +1,10 @@
 import { useState, useEffect } from 'react';
 import { OGDialog, OGDialogContent, OGDialogHeader, OGDialogTitle, Button, Input, Label } from '@librechat/client';
-import { useLocalize } from '~/hooks';
-import { useGetPresetsQuery } from '~/data-provider';
-import type { TPreset } from 'librechat-data-provider';
 
 type CreateProjectDialogProps = {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  onCreate: (name: string, systemPrompt?: string, defaultPresetId?: string, ragFileIds?: string[]) => Promise<void>;
+  onCreate: (name: string, description?: string, systemPrompt?: string, ragFileIds?: string[]) => Promise<void>;
 };
 
 export const CreateProjectDialog: React.FC<CreateProjectDialogProps> = ({
@@ -15,18 +12,16 @@ export const CreateProjectDialog: React.FC<CreateProjectDialogProps> = ({
   onOpenChange,
   onCreate,
 }) => {
-  const localize = useLocalize();
   const [name, setName] = useState('');
+  const [description, setDescription] = useState('');
   const [systemPrompt, setSystemPrompt] = useState('');
-  const [defaultPresetId, setDefaultPresetId] = useState<string>('');
-  const { data: presets } = useGetPresetsQuery();
   const [isCreating, setIsCreating] = useState(false);
 
   useEffect(() => {
     if (!open) {
       setName('');
+      setDescription('');
       setSystemPrompt('');
-      setDefaultPresetId('');
     }
   }, [open]);
 
@@ -39,8 +34,8 @@ export const CreateProjectDialog: React.FC<CreateProjectDialogProps> = ({
     try {
       await onCreate(
         name.trim(),
+        description.trim() || undefined,
         systemPrompt.trim() || undefined,
-        defaultPresetId || undefined,
         [], // RAG files will be added later via project settings
       );
     } finally {
@@ -52,50 +47,40 @@ export const CreateProjectDialog: React.FC<CreateProjectDialogProps> = ({
     <OGDialog open={open} onOpenChange={onOpenChange}>
       <OGDialogContent
         className="w-11/12 max-w-lg"
-        title={localize('com_ui_create_project')}
+        title="Create New Project"
         showCloseButton={true}
       >
         <OGDialogHeader>
-          <OGDialogTitle>{localize('com_ui_create_project')}</OGDialogTitle>
+          <OGDialogTitle>Create New Project</OGDialogTitle>
         </OGDialogHeader>
         <form onSubmit={handleSubmit} className="flex flex-col gap-4">
           <div className="flex flex-col gap-2">
-            <Label htmlFor="project-name">{localize('com_ui_project_name')}</Label>
+            <Label htmlFor="project-name">Project Name</Label>
             <Input
               id="project-name"
               value={name}
               onChange={(e) => setName(e.target.value)}
-              placeholder={localize('com_ui_project_name_placeholder')}
               required
               autoFocus
             />
           </div>
           <div className="flex flex-col gap-2">
-            <Label htmlFor="project-system-prompt">{localize('com_ui_system_prompt')} (Optional)</Label>
+            <Label htmlFor="project-description">Description</Label>
+            <Input
+              id="project-description"
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+            />
+          </div>
+          <div className="flex flex-col gap-2">
+            <Label htmlFor="project-system-prompt">Custom Instructions</Label>
             <textarea
               id="project-system-prompt"
               value={systemPrompt}
               onChange={(e) => setSystemPrompt(e.target.value)}
-              placeholder={localize('com_ui_system_prompt_placeholder')}
               className="min-h-[100px] w-full rounded-md border border-border-light bg-surface-primary p-2 text-sm text-text-primary"
               rows={4}
             />
-          </div>
-          <div className="flex flex-col gap-2">
-            <Label htmlFor="project-preset">{localize('com_ui_default_preset')} (Optional)</Label>
-            <select
-              id="project-preset"
-              value={defaultPresetId}
-              onChange={(e) => setDefaultPresetId(e.target.value)}
-              className="w-full rounded-md border border-border-light bg-surface-primary p-2 text-sm text-text-primary"
-            >
-              <option value="">{localize('com_ui_none')}</option>
-              {presets?.map((preset: TPreset) => (
-                <option key={preset.presetId} value={preset.presetId}>
-                  {preset.title || preset.presetId}
-                </option>
-              ))}
-            </select>
           </div>
           <div className="flex justify-end gap-2 pt-2">
             <Button
@@ -104,10 +89,10 @@ export const CreateProjectDialog: React.FC<CreateProjectDialogProps> = ({
               onClick={() => onOpenChange(false)}
               disabled={isCreating}
             >
-              {localize('com_ui_cancel')}
+              Cancel
             </Button>
             <Button type="submit" variant="default" disabled={isCreating || !name.trim()}>
-              {isCreating ? localize('com_ui_creating') : localize('com_ui_create')}
+              {isCreating ? 'Creating...' : 'Create'}
             </Button>
           </div>
         </form>
