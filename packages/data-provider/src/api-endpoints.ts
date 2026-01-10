@@ -129,6 +129,12 @@ export const presets = () => `${BASE_URL}/api/presets`;
 
 export const deletePreset = () => `${BASE_URL}/api/presets/delete`;
 
+export const projects = () => `${BASE_URL}/api/projects`;
+
+export const projectById = (projectId: string) => `${BASE_URL}/api/projects/${projectId}`;
+
+export const renameProject = (projectId: string) => `${BASE_URL}/api/projects/${projectId}/rename`;
+
 export const aiEndpoints = () => `${BASE_URL}/api/endpoints`;
 
 export const models = () => `${BASE_URL}/api/models`;

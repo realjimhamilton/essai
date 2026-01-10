@@ -2973,6 +2973,18 @@ nav[role="navigation"] button svg circle[fill],
   stroke-width: 1 !important;
 }
 
+/* Projects icon - thicker stroke */
+#projects-nav-menu-button svg,
+#projects-nav-menu-button svg *,
+#projects-nav-menu-button svg path,
+#projects-nav-menu-button svg line,
+#projects-nav-menu-button svg circle,
+#projects-nav-menu-button svg polyline,
+#projects-nav-menu-button svg rect,
+#projects-nav-menu-button svg polygon {
+  stroke-width: 2.5 !important;
+}
+
 /* Close sidebar, new chat, and bookmark icons - filled icons */
 button svg[aria-hidden="true"] path[fill],
 button svg[aria-hidden="true"] circle[fill],

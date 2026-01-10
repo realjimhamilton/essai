@@ -86,7 +86,7 @@ module.exports = {
    * @param {Object} metadata - Additional metadata to log for operation.
    * @returns {Promise<TConversation>} The conversation object.
    */
-  saveConvo: async (req, { conversationId, newConversationId, ...convo }, metadata) => {
+  saveConvo: async (req, { conversationId, newConversationId, project_id, ...convo }, metadata) => {
     try {
       if (metadata?.context) {
         logger.debug(`[saveConvo] ${metadata.context}`);
@@ -97,6 +97,54 @@ module.exports = {
 
       if (newConversationId) {
         update.conversationId = newConversationId;
+      }
+
+      // Handle project settings inheritance for new conversations
+      if (project_id && (!conversationId || conversationId === 'new')) {
+        const { getProject } = require('./Project');
+        const project = await getProject(req.user.id, project_id);
+        
+        if (project) {
+          // Set project_id on conversation
+          update.project_id = project_id;
+          
+          // Apply system prompt from project if not already set
+          if (project.systemPrompt && !update.system) {
+            update.system = project.systemPrompt;
+          }
+          
+          // Apply default preset from project if not already set
+          if (project.defaultPresetId && !update.presetId) {
+            const { getPreset } = require('./Preset');
+            const preset = await getPreset(req.user.id, { presetId: project.defaultPresetId });
+            if (preset && preset.user === req.user.id) {
+              // Apply preset fields to conversation
+              Object.keys(preset).forEach((key) => {
+                if (key !== 'presetId' && key !== 'title' && key !== 'user' && key !== '_id' && preset[key] !== undefined) {
+                  if (!update[key] || update[key] === null) {
+                    update[key] = preset[key];
+                  }
+                }
+              });
+            }
+          }
+          
+          // Merge RAG file IDs from project with any existing file_ids
+          if (project.ragFileIds && project.ragFileIds.length > 0) {
+            const existingFileIds = update.file_ids || [];
+            const projectFileIds = project.ragFileIds || [];
+            update.file_ids = [...new Set([...existingFileIds, ...projectFileIds])];
+            // Also update files array for compatibility
+            if (update.files) {
+              update.files = [...new Set([...update.files, ...projectFileIds])];
+            } else {
+              update.files = [...projectFileIds];
+            }
+          }
+        }
+      } else if (project_id) {
+        // For existing conversations, just update the project_id reference
+        update.project_id = project_id;
       }
 
       if (req?.body?.isTemporary) {
@@ -163,11 +211,21 @@ module.exports = {
       isArchived = false,
       tags,
       search,
+      project_id,
       sortBy = 'updatedAt',
       sortDirection = 'desc',
     } = {},
   ) => {
     const filters = [{ user }];
+    
+    // Filter by project_id if provided
+    if (project_id) {
+      filters.push({ project_id });
+    } else {
+      // If project_id is explicitly null or not provided, only show conversations without a project
+      // This allows showing non-project chats separately
+      filters.push({ $or: [{ project_id: { $exists: false } }, { project_id: null }] });
+    }
     if (isArchived) {
       filters.push({ isArchived: true });
     } else {
@@ -243,7 +301,7 @@ module.exports = {
 
       const convos = await Conversation.find(query)
         .select(
-          'conversationId endpoint title createdAt updatedAt user model agent_id assistant_id spec iconURL',
+          'conversationId endpoint title createdAt updatedAt user model agent_id assistant_id spec iconURL project_id',
         )
         .sort(sortObj)
         .limit(limit + 1)

@@ -6,6 +6,7 @@ const staticRoute = require('./static');
 const messages = require('./messages');
 const memories = require('./memories');
 const presets = require('./presets');
+const projects = require('./projects');
 const prompts = require('./prompts');
 const balance = require('./balance');
 const actions = require('./actions');
@@ -45,6 +46,7 @@ module.exports = {
   prompts,
   actions,
   presets,
+  projects,
   balance,
   messages,
   memories,

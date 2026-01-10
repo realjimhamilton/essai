@@ -19,6 +19,7 @@ export type ConversationListParams = {
   sortDirection?: 'asc' | 'desc';
   tags?: string[];
   search?: string;
+  project_id?: string | null;
 };
 
 export type MinimalConversation = Pick<

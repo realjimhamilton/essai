@@ -301,13 +301,7 @@ const ChatForm = memo(({ index = 0 }: { index?: number }) => {
                     />
                   )}
                 </div>
-                <div className="flex flex-col items-start justify-start pr-2.5 pt-1.5">
-                  <CollapseChat
-                    isCollapsed={isCollapsed}
-                    isScrollable={isMoreThanThreeRows}
-                    setIsCollapsed={setIsCollapsed}
-                  />
-                </div>
+                {/* CollapseChat removed for end user */}
               </div>
             )}
             <div

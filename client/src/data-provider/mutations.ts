@@ -2,6 +2,7 @@ import {
   Constants,
   defaultAssistantsVersion,
   ConversationListResponse,
+  TProject,
 } from 'librechat-data-provider';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { dataService, MutationKeys, QueryKeys, defaultOrderQuery } from 'librechat-data-provider';
@@ -1048,5 +1049,83 @@ export const useAcceptTermsMutation = (
     },
     onError: options?.onError,
     onMutate: options?.onMutate,
+  });
+};
+
+export const useCreateProjectMutation = (
+  options?: UseMutationOptions<s.TProject, unknown, Partial<s.TProject>, unknown>,
+): UseMutationResult<s.TProject, unknown, Partial<s.TProject>, unknown> => {
+  const queryClient = useQueryClient();
+  return useMutation(
+    (payload: Partial<s.TProject>) => dataService.createProject(payload),
+    {
+      onSuccess: () => {
+        queryClient.invalidateQueries([QueryKeys.projects]);
+      },
+      ...options,
+    },
+  );
+};
+
+export const useUpdateProjectMutation = (
+  options?: UseMutationOptions<
+    s.TProject,
+    unknown,
+    { projectId: string; payload: Partial<s.TProject> },
+    unknown
+  >,
+): UseMutationResult<
+  s.TProject,
+  unknown,
+  { projectId: string; payload: Partial<s.TProject> },
+  unknown
+> => {
+  const queryClient = useQueryClient();
+  return useMutation(
+    ({ projectId, payload }: { projectId: string; payload: Partial<s.TProject> }) =>
+      dataService.updateProject(projectId, payload),
+    {
+      onSuccess: () => {
+        queryClient.invalidateQueries([QueryKeys.projects]);
+        queryClient.invalidateQueries([QueryKeys.project]);
+      },
+      ...options,
+    },
+  );
+};
+
+export const useRenameProjectMutation = (
+  options?: UseMutationOptions<
+    s.TProject,
+    unknown,
+    { projectId: string; name: string },
+    unknown
+  >,
+): UseMutationResult<s.TProject, unknown, { projectId: string; name: string }, unknown> => {
+  const queryClient = useQueryClient();
+  return useMutation(
+    ({ projectId, name }: { projectId: string; name: string }) =>
+      dataService.renameProject(projectId, name),
+    {
+      onSuccess: () => {
+        queryClient.invalidateQueries([QueryKeys.projects]);
+        queryClient.invalidateQueries([QueryKeys.project]);
+      },
+      ...options,
+    },
+  );
+};
+
+export const useDeleteProjectMutation = (
+  options?: UseMutationOptions<void, unknown, string, unknown>,
+): UseMutationResult<void, unknown, string, unknown> => {
+  const queryClient = useQueryClient();
+  return useMutation((projectId: string) => dataService.deleteProject(projectId), {
+    onSuccess: () => {
+      queryClient.invalidateQueries([QueryKeys.projects]);
+      queryClient.invalidateQueries([QueryKeys.project]);
+      queryClient.invalidateQueries([QueryKeys.allConversations]);
+    },
+    ...options,
   });
 };

@@ -51,17 +51,25 @@ const SidePanelGroup = memo(
     const hideSidePanel = useRecoilValue(store.hideSidePanel);
 
     const calculateLayout = useCallback(() => {
+      // For non-admin users, don't allocate space for the side panel
+      const shouldShowSidePanel = !hideSidePanel && interfaceConfig.sidePanel === true && isAdmin;
+      
       if (artifacts == null) {
-        const navSize = defaultLayout.length === 2 ? defaultLayout[1] : defaultLayout[2];
-        return [100 - navSize, navSize];
+        if (shouldShowSidePanel) {
+          const navSize = defaultLayout.length === 2 ? defaultLayout[1] : defaultLayout[2];
+          return [100 - navSize, navSize];
+        } else {
+          // No side panel for non-admins - give all space to main content
+          return [100, 0];
+        }
       } else {
-        const navSize = 0;
+        const navSize = shouldShowSidePanel ? 0 : 0; // Side panel not shown in artifacts mode anyway
         const remainingSpace = 100 - navSize;
         const newMainSize = Math.floor(remainingSpace / 2);
         const artifactsSize = remainingSpace - newMainSize;
         return [newMainSize, artifactsSize, navSize];
       }
-    }, [artifacts, defaultLayout]);
+    }, [artifacts, defaultLayout, hideSidePanel, interfaceConfig.sidePanel, isAdmin]);
 
     const currentLayout = useMemo(() => normalizeLayout(calculateLayout()), [calculateLayout]);
 

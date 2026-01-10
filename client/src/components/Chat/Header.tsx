@@ -72,17 +72,15 @@ export default function Header() {
               ) : (
                 <BotSelector startupConfig={startupConfig} />
               )}
-              {isAdmin && interfaceConfig.presets === true && interfaceConfig.modelSelect && (
-                <PresetsMenu />
-              )}
+              {/* PresetsMenu removed for end user */}
               {isAdmin && hasAccessToBookmarks === true && <BookmarkMenu />}
-              {isAdmin && hasAccessToMultiConvo === true && <AddMultiConvo />}
+              {/* AddMultiConvo removed for end user */}
               {isSmallScreen && (
                 <>
                   <ExportAndShareMenu
                     isSharedButtonEnabled={startupConfig?.sharedLinksEnabled ?? false}
                   />
-                  <TemporaryChat />
+                  {/* TemporaryChat removed for end user */}
                 </>
               )}
             </div>
@@ -94,7 +92,7 @@ export default function Header() {
             <ExportAndShareMenu
               isSharedButtonEnabled={startupConfig?.sharedLinksEnabled ?? false}
             />
-            <TemporaryChat />
+            {/* TemporaryChat removed for end user */}
           </div>
         )}
       </div>

@@ -658,6 +658,7 @@ export const tConversationSchema = z.object({
   title: z.string().nullable().or(z.literal('New Chat')).default('New Chat'),
   user: z.string().optional(),
   messages: z.array(z.string()).optional(),
+  project_id: z.string().nullable().optional(),
   tools: z.union([z.array(tPluginSchema), z.array(z.string())]).optional(),
   modelLabel: z.string().nullable().optional(),
   userLabel: z.string().optional(),
@@ -850,6 +851,22 @@ export const tQueryParamsSchema = tConversationSchema
   );
 
 export type TPreset = z.infer<typeof tPresetSchema>;
+
+// Project schema
+export const tProjectSchema = z.object({
+  _id: z.string().optional(),
+  name: z.string(),
+  user: z.string().optional(),
+  systemPrompt: z.string().nullable().optional(),
+  defaultPresetId: z.string().nullable().optional(),
+  ragFileIds: z.array(z.string()).optional().default([]),
+  promptGroupIds: z.array(z.string()).optional().default([]),
+  agentIds: z.array(z.string()).optional().default([]),
+  createdAt: z.string().optional(),
+  updatedAt: z.string().optional(),
+});
+
+export type TProject = z.infer<typeof tProjectSchema>;
 
 export type TSetOption = (
   param: number | string,

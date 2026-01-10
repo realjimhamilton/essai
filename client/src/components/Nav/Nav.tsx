@@ -30,6 +30,8 @@ import NewChat from './NewChat';
 import { cn } from '~/utils';
 import store from '~/store';
 
+const ProjectsNav = lazy(() => import('./Projects/ProjectsNav'));
+const ProjectsList = lazy(() => import('./Projects/ProjectsList'));
 const BookmarkNav = lazy(() => import('./Bookmarks/BookmarkNav'));
 const AccountSettings = lazy(() => import('./AccountSettings'));
 
@@ -83,6 +85,7 @@ const Nav = memo(
     const [isChatsExpanded, setIsChatsExpanded] = useLocalStorage('chatsExpanded', true);
     const [showLoading, setShowLoading] = useState(false);
     const [tags, setTags] = useState<string[]>([]);
+    const [selectedProjectId, setSelectedProjectId] = useState<string | null>(null);
 
     const hasAccessToBookmarks = useHasAccess({
       permissionType: PermissionTypes.BOOKMARKS,
@@ -96,6 +99,7 @@ const Nav = memo(
         {
           tags: tags.length === 0 ? undefined : tags,
           search: search.debouncedQuery || undefined,
+          project_id: selectedProjectId !== null ? selectedProjectId : undefined,
         },
         {
           enabled: isAuthenticated,
@@ -186,9 +190,12 @@ const Nav = memo(
     const headerButtons = useMemo(
       () => (
         <>
+          <div className="mt-1.5" />
+          <Suspense fallback={null}>
+            <ProjectsNav />
+          </Suspense>
           {hasAccessToBookmarks && (
             <>
-              <div className="mt-1.5" />
               <Suspense fallback={null}>
                 <BookmarkNav tags={tags} setTags={setTags} />
               </Suspense>
@@ -232,7 +239,15 @@ const Nav = memo(
               toggleNav={toggleNavVisible}
               headerButtons={headerButtons}
               isSmallScreen={isSmallScreen}
+              selectedProjectId={selectedProjectId}
             />
+            <Suspense fallback={null}>
+              <ProjectsList 
+                selectedProjectId={selectedProjectId} 
+                setSelectedProjectId={setSelectedProjectId}
+                toggleNav={itemToggleNav}
+              />
+            </Suspense>
             <div className="flex min-h-0 flex-grow flex-col overflow-hidden">
               <Conversations
                 conversations={conversations}

@@ -97,6 +97,30 @@ export function deletePreset(arg: s.TPreset | undefined): Promise<m.PresetDelete
   return request.post(endpoints.deletePreset(), arg);
 }
 
+export function getProjects(): Promise<s.TProject[]> {
+  return request.get(endpoints.projects());
+}
+
+export function getProject(projectId: string): Promise<s.TProject> {
+  return request.get(endpoints.projectById(projectId));
+}
+
+export function createProject(payload: Partial<s.TProject>): Promise<s.TProject> {
+  return request.post(endpoints.projects(), payload);
+}
+
+export function updateProject(projectId: string, payload: Partial<s.TProject>): Promise<s.TProject> {
+  return request.patch(endpoints.projectById(projectId), payload);
+}
+
+export function renameProject(projectId: string, name: string): Promise<s.TProject> {
+  return request.patch(endpoints.renameProject(projectId), { name });
+}
+
+export function deleteProject(projectId: string): Promise<{ message: string; deletedCount: number }> {
+  return request.delete(endpoints.projectById(projectId));
+}
+
 export function getSearchEnabled(): Promise<boolean> {
   return request.get(endpoints.searchEnabled());
 }
@@ -700,7 +724,12 @@ export function clearAllConversations(): Promise<unknown> {
 export const listConversations = (
   params?: q.ConversationListParams,
 ): Promise<q.ConversationListResponse> => {
-  return request.get(endpoints.conversations(params ?? {}));
+  // Convert project_id null to empty string for API
+  const apiParams = params ? { ...params } : {};
+  if (apiParams.project_id === null) {
+    apiParams.project_id = '';
+  }
+  return request.get(endpoints.conversations(apiParams));
 };
 
 export function getConversations(cursor: string): Promise<t.TGetConversationsResponse> {

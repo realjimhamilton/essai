@@ -1,5 +1,6 @@
 const { GLOBAL_PROJECT_NAME } = require('librechat-data-provider').Constants;
 const { Project } = require('~/db/models');
+const { logger } = require('@librechat/data-schemas');
 
 /**
  * Retrieve a project by ID and convert the found project document to a plain object.
@@ -119,6 +120,114 @@ const removeAgentFromAllProjects = async (agentId) => {
   await Project.updateMany({}, { $pull: { agentIds: agentId } });
 };
 
+/**
+ * Get all user-scoped projects for a user
+ * @param {string} userId - The user ID
+ * @returns {Promise<IMongoProject[]>} Array of projects
+ */
+const getProjects = async (userId) => {
+  try {
+    const projects = await Project.find({ user: userId }).lean().sort({ updatedAt: -1 });
+    return projects;
+  } catch (error) {
+    logger.error('[getProjects] Error getting projects', error);
+    throw new Error('Error retrieving projects');
+  }
+};
+
+/**
+ * Get a single user-scoped project by ID
+ * @param {string} userId - The user ID
+ * @param {string} projectId - The project ID
+ * @returns {Promise<IMongoProject|null>} The project or null if not found
+ */
+const getProject = async (userId, projectId) => {
+  try {
+    const project = await Project.findOne({ _id: projectId, user: userId }).lean();
+    return project;
+  } catch (error) {
+    logger.error('[getProject] Error getting project', error);
+    throw new Error('Error retrieving project');
+  }
+};
+
+/**
+ * Save or update a user-scoped project
+ * @param {string} userId - The user ID
+ * @param {Object} projectData - The project data to save
+ * @returns {Promise<IMongoProject>} The saved project
+ */
+const saveProject = async (userId, projectData) => {
+  try {
+    const { _id, name, systemPrompt, defaultPresetId, ragFileIds } = projectData;
+    
+    const update = {
+      user: userId,
+      name,
+      systemPrompt: systemPrompt ?? null,
+      defaultPresetId: defaultPresetId ?? null,
+      ragFileIds: Array.isArray(ragFileIds) ? ragFileIds : [],
+    };
+
+    if (_id) {
+      // Update existing project
+      const project = await Project.findOneAndUpdate(
+        { _id, user: userId },
+        { $set: update },
+        { new: true, lean: true }
+      );
+      return project;
+    } else {
+      // Create new project
+      const project = await Project.create(update);
+      return project.toObject();
+    }
+  } catch (error) {
+    logger.error('[saveProject] Error saving project', error);
+    throw error;
+  }
+};
+
+/**
+ * Update project name (rename)
+ * @param {string} userId - The user ID
+ * @param {string} projectId - The project ID
+ * @param {string} newName - The new project name
+ * @returns {Promise<IMongoProject|null>} The updated project or null if not found
+ */
+const updateProjectName = async (userId, projectId, newName) => {
+  try {
+    const project = await Project.findOneAndUpdate(
+      { _id: projectId, user: userId },
+      { $set: { name: newName } },
+      { new: true, lean: true }
+    );
+    return project;
+  } catch (error) {
+    logger.error('[updateProjectName] Error updating project name', error);
+    throw error;
+  }
+};
+
+/**
+ * Delete a user-scoped project
+ * @param {string} userId - The user ID
+ * @param {string} projectId - The project ID
+ * @returns {Promise<Object|null>} The delete result or null if not found
+ */
+const deleteProject = async (userId, projectId) => {
+  try {
+    const result = await Project.deleteOne({ _id: projectId, user: userId });
+    if (result.deletedCount === 0) {
+      return null;
+    }
+    return result;
+  } catch (error) {
+    logger.error('[deleteProject] Error deleting project', error);
+    throw new Error('Error deleting project');
+  }
+};
+
 module.exports = {
   getProjectById,
   getProjectByName,
@@ -130,4 +239,10 @@ module.exports = {
   addAgentIdsToProject,
   removeAgentIdsFromProject,
   removeAgentFromAllProjects,
+  /* user-scoped projects */
+  getProjects,
+  getProject,
+  saveProject,
+  updateProjectName,
+  deleteProject,
 };

@@ -17,6 +17,7 @@ import type t from 'librechat-data-provider';
 import type {
   Action,
   TPreset,
+  TProject,
   ConversationListResponse,
   ConversationListParams,
   MessagesListParams,
@@ -30,6 +31,7 @@ import type {
   SharedLinksListParams,
   SharedLinksResponse,
 } from 'librechat-data-provider';
+import * as s from 'librechat-data-provider/schemas';
 import type { ConversationCursorData } from '~/utils/convos';
 import { findConversationInInfinite } from '~/utils';
 
@@ -43,6 +45,35 @@ export const useGetPresetsQuery = (
     refetchOnMount: false,
     ...config,
   });
+};
+
+export const useGetProjectsQuery = (
+  config?: UseQueryOptions<TProject[]>,
+): QueryObserverResult<TProject[], unknown> => {
+  return useQuery<TProject[]>([QueryKeys.projects], () => dataService.getProjects(), {
+    staleTime: 1000 * 10,
+    refetchOnWindowFocus: false,
+    refetchOnReconnect: false,
+    refetchOnMount: false,
+    ...config,
+  });
+};
+
+export const useGetProjectQuery = (
+  projectId: string,
+  config?: UseQueryOptions<TProject>,
+): QueryObserverResult<TProject, unknown> => {
+  return useQuery<TProject>(
+    [QueryKeys.project, projectId],
+    () => dataService.getProject(projectId),
+    {
+      staleTime: 1000 * 10,
+      refetchOnWindowFocus: false,
+      refetchOnReconnect: false,
+      refetchOnMount: false,
+      ...config,
+    },
+  );
 };
 
 export const useGetConvoIdQuery = (
@@ -80,12 +111,12 @@ export const useConversationsInfiniteQuery = (
   params: ConversationListParams,
   config?: UseInfiniteQueryOptions<ConversationListResponse, unknown>,
 ) => {
-  const { isArchived, sortBy, sortDirection, tags, search } = params;
+  const { isArchived, sortBy, sortDirection, tags, search, project_id } = params;
 
   return useInfiniteQuery<ConversationListResponse>({
     queryKey: [
       isArchived ? QueryKeys.archivedConversations : QueryKeys.allConversations,
-      { isArchived, sortBy, sortDirection, tags, search },
+      { isArchived, sortBy, sortDirection, tags, search, project_id },
     ],
     queryFn: ({ pageParam }) =>
       dataService.listConversations({
@@ -94,6 +125,7 @@ export const useConversationsInfiniteQuery = (
         sortDirection,
         tags,
         search,
+        project_id,
         cursor: pageParam?.toString(),
       }),
     getNextPageParam: (lastPage) => lastPage?.nextCursor ?? undefined,

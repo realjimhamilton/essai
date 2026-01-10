@@ -26,17 +26,23 @@ const convoSchema: Schema<IConversation> = new Schema(
     agent_id: {
       type: String,
     },
-    tags: {
-      type: [String],
-      default: [],
-      meiliIndex: true,
-    },
-    files: {
-      type: [String],
-    },
-    expiredAt: {
-      type: Date,
-    },
+  tags: {
+    type: [String],
+    default: [],
+    meiliIndex: true,
+  },
+  files: {
+    type: [String],
+  },
+  project_id: {
+    type: Schema.Types.ObjectId,
+    ref: 'Project',
+    default: null,
+    index: true,
+  },
+  expiredAt: {
+    type: Date,
+  },
   },
   { timestamps: true },
 );

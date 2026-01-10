@@ -14,12 +14,14 @@ export default function NewChat({
   subHeaders,
   isSmallScreen,
   headerButtons,
+  selectedProjectId,
 }: {
   index?: number;
   toggleNav: () => void;
   isSmallScreen?: boolean;
   subHeaders?: React.ReactNode;
   headerButtons?: React.ReactNode;
+  selectedProjectId?: string | null;
 }) {
   const queryClient = useQueryClient();
   /** Note: this component needs an explicit index passed if using more than one */
@@ -44,13 +46,13 @@ export default function NewChat({
       }
       clearMessagesCache(queryClient, conversation?.conversationId);
       queryClient.invalidateQueries([QueryKeys.messages]);
-      newConvo();
+      newConvo({ project_id: selectedProjectId });
       navigate('/c/new', { state: { focusChat: true } });
       if (isSmallScreen) {
         toggleNav();
       }
     },
-    [queryClient, conversation, newConvo, navigate, toggleNav, isSmallScreen],
+    [queryClient, conversation, newConvo, navigate, toggleNav, isSmallScreen, selectedProjectId],
   );
 
   return (

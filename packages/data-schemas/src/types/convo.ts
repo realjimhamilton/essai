@@ -52,6 +52,7 @@ export interface IConversation extends Document {
   fileTokenLimit?: number;
   // Additional fields
   files?: string[];
+  project_id?: Types.ObjectId | string;
   expiredAt?: Date;
   createdAt?: Date;
   updatedAt?: Date;

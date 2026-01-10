@@ -262,6 +262,7 @@ const useNewConvo = (index = 0) => {
       keepLatestMessage = false,
       keepAddedConvos = false,
       disableParams,
+      project_id,
     }: {
       template?: Partial<TConversation>;
       preset?: Partial<TPreset>;
@@ -271,6 +272,7 @@ const useNewConvo = (index = 0) => {
       keepLatestMessage?: boolean;
       keepAddedConvos?: boolean;
       disableParams?: boolean;
+      project_id?: string | null;
     } = {}) {
       pauseGlobalAudio();
       if (!saveBadgesState) {
@@ -291,6 +293,7 @@ const useNewConvo = (index = 0) => {
         title: 'New Chat',
         endpoint: null,
         ...template,
+        project_id: project_id ?? template.project_id,
         createdAt: '',
         updatedAt: '',
       };
