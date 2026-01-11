@@ -1413,10 +1413,10 @@ button {
 .btn-neutral {
   --tw-bg-opacity: 1;
   --tw-text-opacity: 1;
-  background-color: var(--surface-secondary);
+  background-color: #ffffff !important;
   border-color: rgba(0, 0, 0, 0.1);
   border-width: 1px;
-  color: rgba(64, 65, 79, var(--tw-text-opacity));
+  color: #000000 !important;
   font-size: 0.875rem;
   line-height: 1.25rem;
   transition: all 0.1s ease-in-out;
@@ -1424,7 +1424,43 @@ button {
 
 .btn-neutral:hover {
   --tw-bg-opacity: 1;
-  background-color: rgba(236, 236, 241, var(--tw-bg-opacity));
+  background-color: #43b7a1 !important;
+  color: #ffffff !important;
+}
+
+/* Light mode: white background with black text, accent color with white text on hover */
+/* Override Tailwind utility classes that Button component applies */
+button.btn-neutral:not(.btn-primary):not([class*="submit"]),
+button.btn.btn-neutral:not(.btn-primary):not([class*="submit"]) {
+  background-color: #ffffff !important;
+  background: #ffffff !important;
+  color: #000000 !important;
+  border-color: rgba(0, 0, 0, 0.1) !important;
+}
+
+button.btn-neutral:not(.btn-primary):not([class*="submit"]):hover,
+button.btn.btn-neutral:not(.btn-primary):not([class*="submit"]):hover {
+  background-color: #43b7a1 !important;
+  background: #43b7a1 !important;
+  color: #ffffff !important;
+  border-color: #43b7a1 !important;
+}
+
+/* Override dark mode styles for btn-neutral */
+.dark button.btn-neutral:not(.btn-primary):not([class*="submit"]),
+.dark button.btn.btn-neutral:not(.btn-primary):not([class*="submit"]) {
+  background-color: transparent !important;
+  background: transparent !important;
+  color: rgba(255, 255, 240, 1) !important;
+  border-color: rgba(66, 66, 66, 1) !important;
+}
+
+.dark button.btn-neutral:not(.btn-primary):not([class*="submit"]):hover,
+.dark button.btn.btn-neutral:not(.btn-primary):not([class*="submit"]):hover {
+  background-color: rgba(66, 66, 66, 1) !important;
+  background: rgba(66, 66, 66, 1) !important;
+  color: rgba(255, 255, 240, 1) !important;
+  border-color: rgba(66, 66, 66, 1) !important;
 }
 
 .btn-neutral:focus {
@@ -1436,9 +1472,9 @@ button {
   --tw-border-opacity: 1;
   --tw-bg-opacity: 1;
   --tw-text-opacity: 1;
-  background-color: transparent;
+  background-color: transparent !important;
   border-color: rgba(66, 66, 66, var(--tw-border-opacity));
-  color: rgba(255, 255, 240, var(--tw-text-opacity));
+  color: rgba(255, 255, 240, var(--tw-text-opacity)) !important;
 }
 
 .dark .btn-neutral:hover {
@@ -3064,4 +3100,41 @@ button svg[aria-hidden="true"] circle[fill],
 .filled-icon-thin svg rect {
   fill: #43b7a1 !important;
   color: #43b7a1 !important;
+}
+
+/* Agent Builder btn-neutral buttons - white bg, black text, accent on hover (placed at end for maximum precedence) */
+button.btn-neutral:not(.btn-primary):not([class*="submit"]),
+.btn.btn-neutral:not(.btn-primary):not([class*="submit"]),
+button.btn.btn-neutral:not(.btn-primary):not([class*="submit"]) {
+  background-color: #ffffff !important;
+  background: #ffffff !important;
+  color: #000000 !important;
+  border-color: rgba(0, 0, 0, 0.1) !important;
+}
+
+button.btn-neutral:not(.btn-primary):not([class*="submit"]):hover,
+.btn.btn-neutral:not(.btn-primary):not([class*="submit"]):hover,
+button.btn.btn-neutral:not(.btn-primary):not([class*="submit"]):hover {
+  background-color: #43b7a1 !important;
+  background: #43b7a1 !important;
+  color: #ffffff !important;
+  border-color: #43b7a1 !important;
+}
+
+.dark button.btn-neutral:not(.btn-primary):not([class*="submit"]),
+.dark .btn.btn-neutral:not(.btn-primary):not([class*="submit"]),
+.dark button.btn.btn-neutral:not(.btn-primary):not([class*="submit"]) {
+  background-color: transparent !important;
+  background: transparent !important;
+  color: rgba(255, 255, 240, 1) !important;
+  border-color: rgba(66, 66, 66, 1) !important;
+}
+
+.dark button.btn-neutral:not(.btn-primary):not([class*="submit"]):hover,
+.dark .btn.btn-neutral:not(.btn-primary):not([class*="submit"]):hover,
+.dark button.btn.btn-neutral:not(.btn-primary):not([class*="submit"]):hover {
+  background-color: rgba(66, 66, 66, 1) !important;
+  background: rgba(66, 66, 66, 1) !important;
+  color: rgba(255, 255, 240, 1) !important;
+  border-color: rgba(66, 66, 66, 1) !important;
 }

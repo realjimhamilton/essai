@@ -7,14 +7,31 @@ import { useAuthContext, useLocalize, useSelectAgent } from '~/hooks';
 import { cn } from '~/utils';
 import { CustomMenu as Menu } from './CustomMenu';
 
+// Fixed order for agents
+const AGENT_ORDER = [
+  'Avatar Bot',
+  'Voice Cloning Bot',
+  'Email Storyselling Bot',
+  'Ad Copy Bot',
+  'Thank You Page Funnel Bot',
+];
+
 function BotSelectorContent() {
   const localize = useLocalize();
-  const { conversation } = useChatContext();
+  const { conversation, getMessages, latestMessage } = useChatContext();
   const agentsMap = useAgentsMapContext();
   const { user } = useAuthContext();
   const { onSelect } = useSelectAgent();
 
   const isAdmin = user?.role === SystemRoles.ADMIN;
+
+  // Check if conversation has messages (has started)
+  // Use latestMessage as a proxy - if it exists, conversation has started
+  const hasMessages = useMemo(() => {
+    if (!getMessages) return false;
+    const messages = getMessages() || [];
+    return messages.length > 0;
+  }, [getMessages, latestMessage?.messageId, conversation?.conversationId]);
 
   // Filter to only show deployed agents for non-admin users
   const deployedAgents = useMemo(() => {
@@ -31,17 +48,42 @@ function BotSelectorContent() {
   }, [agentsMap, isAdmin]);
 
   const agentList = useMemo(() => {
-    return Object.values(deployedAgents || {}).sort((a, b) => {
-      const nameA = a.name || '';
-      const nameB = b.name || '';
+    const agents = Object.values(deployedAgents || {});
+    
+    // Create a map for quick lookup
+    const agentMap = new Map(agents.map(agent => [(agent.name || '').trim().toLowerCase(), agent]));
+    const orderedAgents: typeof agents = [];
+    
+    // Add agents in the exact order specified in AGENT_ORDER
+    for (const orderName of AGENT_ORDER) {
+      const agent = agentMap.get(orderName.toLowerCase());
+      if (agent) {
+        orderedAgents.push(agent);
+        agentMap.delete(orderName.toLowerCase());
+      }
+    }
+    
+    // Add any remaining agents (not in AGENT_ORDER) sorted alphabetically
+    const remainingAgents = Array.from(agentMap.values()).sort((a, b) => {
+      const nameA = (a.name || '').trim();
+      const nameB = (b.name || '').trim();
       return nameA.localeCompare(nameB);
     });
+    orderedAgents.push(...remainingAgents);
+    
+    console.log('Agent list BEFORE reverse:', orderedAgents.map(a => a.name));
+    const reversed = [...orderedAgents].reverse();
+    console.log('Agent list AFTER reverse:', reversed.map(a => a.name));
+    return reversed;
   }, [deployedAgents]);
 
   const selectedAgentId = conversation?.agent_id;
   const selectedAgent = selectedAgentId ? deployedAgents?.[selectedAgentId] : null;
 
   const handleSelectAgent = (agentId: string) => {
+    if (hasMessages) {
+      return; // Prevent agent switching after conversation has started
+    }
     onSelect(agentId);
   };
 
@@ -51,8 +93,12 @@ function BotSelectorContent() {
       description={localize('com_ui_select_bot')}
       render={
         <button
-          className="my-1 flex h-10 w-full max-w-[70vw] items-center justify-center gap-2 rounded-xl border border-border-light bg-presentation px-3 py-2 text-sm text-text-primary hover:bg-surface-active-alt"
+          className={cn(
+            "my-1 flex h-10 w-full max-w-[70vw] items-center justify-center gap-2 rounded-xl border border-border-light bg-presentation px-3 py-2 text-sm text-text-primary",
+            hasMessages ? "opacity-50 cursor-not-allowed" : "hover:bg-surface-active-alt"
+          )}
           aria-label={localize('com_ui_select_bot')}
+          disabled={hasMessages}
         >
           {selectedAgent?.avatar ? (
             <img
@@ -83,15 +129,20 @@ function BotSelectorContent() {
 
   return (
     <div className="relative flex w-full max-w-md flex-col items-center gap-2">
-      <Menu
-        values={{ agent_id: selectedAgentId || '' }}
-        onValuesChange={(values: Record<string, any>) => {
-          if (values.agent_id) {
-            handleSelectAgent(values.agent_id);
-          }
-        }}
-        trigger={trigger}
-      >
+      {hasMessages ? (
+        <div className="w-full">
+          {trigger}
+        </div>
+      ) : (
+        <Menu
+          values={{ agent_id: selectedAgentId || '' }}
+          onValuesChange={(values: Record<string, any>) => {
+            if (values.agent_id) {
+              handleSelectAgent(values.agent_id);
+            }
+          }}
+          trigger={trigger}
+        >
         {agentList.map((agent) => {
           const isSelected = agent.id === selectedAgentId;
           return (
@@ -123,7 +174,8 @@ function BotSelectorContent() {
             </div>
           );
         })}
-      </Menu>
+        </Menu>
+      )}
     </div>
   );
 }
